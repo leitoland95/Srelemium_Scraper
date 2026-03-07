@@ -12,16 +12,14 @@ import os
 
 app = FastAPI()
 
-
 execution_logs = []
-
 
 def log(msg: str):
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     entry = f"[{timestamp}] {msg}"
     print(entry)
     execution_logs.append(entry)
-    
+
 # Inicializar Selenium
 chrome_options = Options()
 chrome_options.add_argument("--headless")
@@ -58,6 +56,16 @@ def build_xpath(el):
     except:
         return None
 
+def element_info(el):
+    return {
+        "xpath": build_xpath(el),
+        "id": el.get_attribute("id"),
+        "name": el.get_attribute("name"),
+        "class": el.get_attribute("class"),
+        "placeholder": el.get_attribute("placeholder"),
+        "text": el.text.strip() if el.text else None
+    }
+
 @app.post("/scrape")
 async def scrape(request: Request):
     data = await request.json()
@@ -78,24 +86,28 @@ async def scrape(request: Request):
         log("Elementos detectados en el DOM")
     except:
         log("Timeout: no se encontraron elementos")
-        return {"botones": {}, "cajas_texto": {}, "html": driver.page_source}
+        return {"botones": {}, "cajas_texto": {},_source}
 
     botones = {}
     cajas_texto = {}
 
-    # Botones
+    # Botones visibles
     log("Buscando botones...")
     for el in driver.find_elements(By.XPATH, "//button | //input[@type='button'] | //input[@type='submit']"):
-        key = el.get_attribute("id") or el.get_attribute("name") or f"sin_atributo_{len(botones)+1}"
-        botones[key] = build_xpath(el)
-        log(f"Botón encontrado: clave={key}, xpath={botones[key]}")
+        if not el.is_displayed():
+            continue
+        key = el.get_attribute("id") or el.get_attribute("name") or f"boton_{len(botones)+1}"
+        botones[key] = element_info(el)
+        log(f"Botón encontrado: clave={key}, xpath={botones[key]['xpath']}")
 
-    # Cajas de texto
+    # Inputs visibles
     log("Buscando cajas de texto...")
     for el in driver.find_elements(By.XPATH, "//input | //textarea | //*[@contenteditable='true']"):
-        key = el.get_attribute("id") or el.get_attribute("name") or f"sin_atributo_{len(cajas_texto)+1}"
-        cajas_texto[key] = build_xpath(el)
-        log(f"Input encontrado: clave={key}, xpath={cajas_texto[key]}")
+        if not el.is_displayed():
+            continue
+        key = el.get_attribute("id") or el.get_attribute("name") or f"input_{len(cajas_texto)+1}"
+        cajas_texto[key] = element_info(el)
+        log(f"Input encontrado: clave={key}, xpath={cajas_texto[key]['xpath']}")
 
     log("Descargando codigo_html completo")
 
