@@ -12,6 +12,16 @@ import os
 
 app = FastAPI()
 
+
+execution_logs = []
+
+
+def log(msg: str):
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    entry = f"[{timestamp}] {msg}"
+    print(entry)
+    execution_logs.append(entry)
+    
 # Inicializar Selenium
 chrome_options = Options()
 chrome_options.add_argument("--headless")
@@ -62,7 +72,7 @@ async def scrape(request: Request):
     # Esperar elementos dinámicos
     try:
         log("Esperando elementos dinámicos...")
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 60).until(
             EC.presence_of_all_elements_located((By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"))
         )
         log("Elementos detectados en el DOM")
@@ -100,6 +110,10 @@ async def scrape(request: Request):
         "html": html_code
     }
 
+@app.get("/logs")
+async def get_logs():
+    return {"logs": execution_logs}
+    
 # --- Keep Alive ---
 def keep_alive():
     url = os.getenv("RENDER_EXTERNAL_URL")
