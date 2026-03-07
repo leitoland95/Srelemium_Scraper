@@ -74,7 +74,7 @@ async def scrape(request: Request):
     # Esperar elementos dinámicos
     try:
         log("Esperando elementos dinámicos...")
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 60).until(
             EC.presence_of_all_elements_located((By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"))
         )
         log("Elementos detectados en el DOM")
