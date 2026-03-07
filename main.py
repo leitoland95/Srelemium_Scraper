@@ -12,27 +12,17 @@ import os
 
 app = FastAPI()
 
-# --- Logs globales ---
-execution_logs = []
-
-def log(msg: str):
-    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    entry = f"[{timestamp}] {msg}"
-    print(entry)
-    execution_logs.append(entry)
-
 # Inicializar Selenium
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 
-log("Inicializando driver de Chrome en modo headless")
 driver = webdriver.Chrome(options=chrome_options)
 
 def build_xpath(el):
     try:
-        xpath = driver.execute_script(
+        return driver.execute_script(
             "function absoluteXPath(element){"
             "var comp, comps = [];"
             "var xpath = '';"
@@ -55,9 +45,7 @@ def build_xpath(el):
             "xpath += '/' + comp.name.toLowerCase();"
             "if (comp.position !== null){xpath += '[' + comp.position + ']';}}"
             "return xpath;} return absoluteXPath(arguments[0]);", el)
-        return xpath
-    except Exception as e:
-        log(f"Error generando XPath: {e}")
+    except:
         return None
 
 @app.post("/scrape")
@@ -74,13 +62,13 @@ async def scrape(request: Request):
     # Esperar elementos dinámicos
     try:
         log("Esperando elementos dinámicos...")
-        WebDriverWait(driver, 80).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_all_elements_located((By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"))
         )
         log("Elementos detectados en el DOM")
     except:
         log("Timeout: no se encontraron elementos")
-        return {"botones": {}, "cajas_texto": {}}
+        return {"botones": {}, "cajas_texto": {}, "html": driver.page_source}
 
     botones = {}
     cajas_texto = {}
@@ -99,28 +87,31 @@ async def scrape(request: Request):
         cajas_texto[key] = build_xpath(el)
         log(f"Input encontrado: clave={key}, xpath={cajas_texto[key]}")
 
+    log("Descargando codigo_html completo")
+
+    # Capturar el HTML completo
+    html_code = driver.page_source
+    
     log("Scraping finalizado")
+    
     return {
         "botones": botones,
-        "cajas_texto": cajas_texto
+        "cajas_texto": cajas_texto,
+        "html": html_code
     }
-
-@app.get("/logs")
-async def get_logs():
-    return {"logs": execution_logs}
 
 # --- Keep Alive ---
 def keep_alive():
     url = os.getenv("RENDER_EXTERNAL_URL")
     if not url:
-        log("No se encontró RENDER_EXTERNAL_URL, keep_alive desactivado")
+        print("No se encontró RENDER_EXTERNAL_URL, keep_alive desactivado")
         return
     while True:
         try:
             requests.get(url)
-            log(f"Ping a {url} para mantener vivo el servicio")
+            print(f"Ping a {url} para mantener vivo el servicio")
         except Exception as e:
-            log(f"Error en keep_alive: {e}")
+            print(f"Error en keep_alive: {e}")
         time.sleep(60)
 
 threading.Thread(target=keep_alive, daemon=True).start()
