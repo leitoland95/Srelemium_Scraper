@@ -221,26 +221,51 @@ async def screenshot():
         log(f"Error al capturar pantalla: {e}")
         return {"status": "error", "message": str(e)}        
 
-# --- NUEVOS ENDPOINTS PARA COOKIES ---
+# --- ENDPOINTS PARA COOKIES ---
 @app.get("/cookies/export")
 async def export_cookies():
     try:
-        save_cookies_to_file()
-        return {"status": "success", "file": str(COOKIES_FILE)}
+        cookies = driver.get_cookies()
+        # Ruta en tu teléfono (ajusta según tu entorno: Termux, Pydroid, etc.)
+        phone_path = Path("/storage/emulated/0/documents/telegram_cookies.json")
+        with open(phone_path, "w") as f:
+            json.dump(cookies, f)
+        log(f"Cookies exportadas a {phone_path}")
+        return {"status": "success", "file": str(phone_path)}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
 @app.post("/cookies/load")
 async def load_cookies():
     try:
-        ok = load_cookies_from_file()
-        if ok:
-            # Refrescar la página actual con cookies cargadas
-            if current_url:
-                driver.get(current_url)
-            return {"status": "success", "message": "Cookies cargadas"}
+        local_path = Path("cookies.json")
+        cookies = None
+
+        # 1. Intentar leer archivo local en el servidor (Render)
+        if local_path.exists():
+            with open(local_path, "r") as f:
+                cookies = json.load(f)
+            log("Cookies cargadas desde archivo local en servidor")
         else:
-            return {"status": "error", "message": "No se encontró archivo de cookies"}
+            # 2. Si no existe, descargar desde tu repo remoto
+            repo_url = "https://raw.githubusercontent.com/tu_usuario/tu_repo/main/telegram_cookies.json"
+            resp = requests.get(repo_url)
+            if resp.status_code == 200:
+                cookies = resp.json()
+                log("Cookies cargadas desde repo remoto")
+            else:
+                return {"status": "error", "message": f"No se pudo descargar cookies: {resp.status_code}"}
+
+        # Aplicar cookies en Selenium
+        driver.delete_all_cookies()
+        for cookie in cookies:
+            if "name" in cookie and "value" in cookie:
+                driver.add_cookie(cookie)
+
+        if current_url:
+            driver.get(current_url)
+
+        return {"status": "success", "message": "Cookies cargadas"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
