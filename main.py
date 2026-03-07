@@ -14,6 +14,7 @@ import base64
 app = FastAPI()
 
 execution_logs = []
+current_url = None  # Guardará la última URL navegada
 
 def log(msg: str):
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -69,12 +70,14 @@ def element_info(el):
 
 @app.post("/navigate")
 async def navigate(request: Request):
+    global current_url
     data = await request.json()
     url = data.get("url")
     if not url:
         return {"error": "No URL provided"}
     try:
         driver.get(url)
+        current_url = url
         log(f"Navegación a {url} completada")
         return {"status": "success", "url": url}
     except Exception as e:
@@ -82,62 +85,45 @@ async def navigate(request: Request):
         return {"status": "error", "message": str(e)}
 
 @app.post("/scrape")
-async def scrape(request: Request):
-    data = await request.json()
-    url = data.get("url")
-    if not url:
-        log("Error: no se proporcionó URL")
-        return {"error": "No URL provided"}
+async def scrape():
+    if not current_url:
+        return {"error": "No URL set. Use /navigate first."}
 
-    log(f"Navegando a {url}")
-    driver.get(url)
+    log(f"Scraping en {current_url}")
+    driver.get(current_url)
 
     try:
-        log("Esperando elementos dinámicos...")
         WebDriverWait(driver, 60).until(
             EC.presence_of_all_elements_located((By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"))
         )
-        log("Elementos detectados en el DOM")
     except:
-        log("Timeout: no se encontraron elementos")
         return {"botones": {}, "cajas_texto": {}, "html": driver.page_source}
 
     botones = {}
     cajas_texto = {}
 
-    # Botones visibles
-    log("Buscando botones...")
     for el in driver.find_elements(By.XPATH, "//button | //input[@type='button'] | //input[@type='submit']"):
-        if not el.is_displayed():
-            continue
-        key = el.get_attribute("id") or el.get_attribute("name") or f"boton_{len(botones)+1}"
-        botones[key] = element_info(el)
+        if el.is_displayed():
+            key = el.get_attribute("id") or el.get_attribute("name") or f"boton_{len(botones)+1}"
+            botones[key] = element_info(el)
 
-    # Inputs visibles
-    log("Buscando cajas de texto...")
     for el in driver.find_elements(By.XPATH, "//input | //textarea | //*[@contenteditable='true']"):
-        if not el.is_displayed():
-            continue
-        key = el.get_attribute("id") or el.get_attribute("name") or f"input_{len(cajas_texto)+1}"
-        cajas_texto[key] = element_info(el)
+        if el.is_displayed():
+            key = el.get_attribute("id") or el.get_attribute("name") or f"input_{len(cajas_texto)+1}"
+            cajas_texto[key] = element_info(el)
 
-    html_code = driver.page_source
-    log("Scraping finalizado")
-    
     return {
         "botones": botones,
         "cajas_texto": cajas_texto,
-        "html": html_code
+        "html": driver.page_source
     }
 
 @app.post("/xpaths")
-async def get_xpaths(request: Request):
-    data = await request.json()
-    url = data.get("url")
-    if not url:
-        return {"error": "No URL provided"}
+async def get_xpaths():
+    if not current_url:
+        return {"error": "No URL set. Use /navigate first."}
 
-    driver.get(url)
+    driver.get(current_url)
     try:
         WebDriverWait(driver, 60).until(
             EC.presence_of_all_elements_located((By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"))
