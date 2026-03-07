@@ -109,6 +109,111 @@ async def navigate(request: Request):
     except Exception as e:
         log(f"Error al navegar a {url}: {e}")
         return {"status": "error", "message": str(e)}
+        
+@app.post("/scrape")
+async def scrape():
+    if not current_url:
+        return {"error": "No URL set. Use /navigate first."}
+
+    log(f"Scraping en {current_url}")
+    driver.get(current_url)
+
+    try:
+        WebDriverWait(driver, 60).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"))
+        )
+    except:
+        return {"botones": {}, "cajas_texto": {}, "html": driver.page_source}
+
+    botones = {}
+    cajas_texto = {}
+
+    for el in driver.find_elements(By.XPATH, "//button | //input[@type='button'] | //input[@type='submit']"):
+        if el.is_displayed():
+            key = el.get_attribute("id") or el.get_attribute("name") or f"boton_{len(botones)+1}"
+            botones[key] = element_info(el)
+
+    for el in driver.find_elements(By.XPATH, "//input | //textarea | //*[@contenteditable='true']"):
+        if el.is_displayed():
+            key = el.get_attribute("id") or el.get_attribute("name") or f"input_{len(cajas_texto)+1}"
+            cajas_texto[key] = element_info(el)
+
+    return {
+        "botones": botones,
+        "cajas_texto": cajas_texto,
+        "html": driver.page_source
+    }
+
+@app.post("/xpaths")
+async def get_xpaths():
+    if not current_url:
+        return {"error": "No URL set. Use /navigate first."}
+
+    driver.get(current_url)
+    try:
+        WebDriverWait(driver, 60).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"))
+        )
+    except:
+        return {"xpaths": []}
+
+    xpaths = []
+    for el in driver.find_elements(By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"):
+        if el.is_displayed():
+            xp = build_xpath(el)
+            if xp:
+                xpaths.append(xp)
+
+    return {"xpaths": xpaths}
+
+@app.post("/click")
+async def click_element(request: Request):
+    data = await request.json()
+    xpath = data.get("xpath")
+    if not xpath:
+        return {"error": "No XPath provided"}
+
+    try:
+        el = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, xpath))
+        )
+        el.click()
+        log(f"Clic ejecutado en {xpath}")
+        return {"status": "success", "xpath": xpath}
+    except Exception as e:
+        log(f"Error al hacer clic en {xpath}: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/type")
+async def type_text(request: Request):
+    data = await request.json()
+    xpath = data.get("xpath")
+    text = data.get("text")
+    if not xpath or text is None:
+        return {"error": "XPath y texto son requeridos"}
+
+    try:
+        el = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, xpath))
+        )
+        el.clear()
+        el.send_keys(text)
+        log(f"Texto '{text}' escrito en {xpath}")
+        return {"status": "success", "xpath": xpath, "text": text}
+    except Exception as e:
+        log(f"Error al escribir en {xpath}: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/screenshot")
+async def screenshot():
+    try:
+        png_bytes = driver.get_screenshot_as_png()
+        encoded = base64.b64encode(png_bytes).decode("utf-8")
+        log("Captura de pantalla realizada")
+        return {"status": "success", "screenshot_base64": encoded}
+    except Exception as e:
+        log(f"Error al capturar pantalla: {e}")
+        return {"status": "error", "message": str(e)}        
 
 # --- NUEVOS ENDPOINTS PARA COOKIES ---
 @app.get("/cookies/export")
