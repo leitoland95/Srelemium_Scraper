@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import uvicorn
 import threading
 import time
@@ -10,7 +12,7 @@ import os
 
 app = FastAPI()
 
-# Inicializar Selenium al arrancar
+# Inicializar Selenium
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
@@ -36,8 +38,6 @@ def build_xpath(el):
             "switch (element.nodeType){"
             "case Node.TEXT_NODE: comp.name = 'text()'; break;"
             "case Node.ATTRIBUTE_NODE: comp.name = '@' + element.nodeName; break;"
-            "case Node.PROCESSING_INSTRUCTION_NODE: comp.name = 'processing-instruction()'; break;"
-            "case Node.COMMENT_NODE: comp.name = 'comment()'; break;"
             "case Node.ELEMENT_NODE: comp.name = element.nodeName; break;}"
             "comp.position = getPos(element);}"
             "for (var i = comps.length - 1; i >= 0; i--){"
@@ -57,6 +57,14 @@ async def scrape(request: Request):
 
     driver.get(url)
 
+    # Esperar hasta que haya al menos un botón o input
+    try:
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"))
+        )
+    except:
+        return {"botones": {}, "cajas_texto": {}}
+
     botones = {}
     cajas_texto = {}
 
@@ -65,8 +73,8 @@ async def scrape(request: Request):
         key = el.get_attribute("id") or el.get_attribute("name") or f"sin_atributo_{len(botones)+1}"
         botones[key] = build_xpath(el)
 
-    # Cajas de texto: todos los <input> y <textarea>
-    for el in driver.find_elements(By.XPATH, "//input | //textarea"):
+    # Cajas de texto: todos los <input>, <textarea> y elementos con contenteditable
+    for el in driver.find_elements(By.XPATH, "//input | //textarea | //*[@contenteditable='true']"):
         key = el.get_attribute("id") or el.get_attribute("name") or f"sin_atributo_{len(cajas_texto)+1}"
         cajas_texto[key] = build_xpath(el)
 
@@ -77,7 +85,7 @@ async def scrape(request: Request):
 
 # --- Keep Alive ---
 def keep_alive():
-    url = os.getenv("RENDER_EXTERNAL_URL")  # Render expone esta variable con tu dominio
+    url = os.getenv("RENDER_EXTERNAL_URL")
     if not url:
         print("No se encontró RENDER_EXTERNAL_URL, keep_alive desactivado")
         return
@@ -87,9 +95,8 @@ def keep_alive():
             print(f"Ping a {url} para mantener vivo el servicio")
         except Exception as e:
             print(f"Error en keep_alive: {e}")
-        time.sleep(60)  # cada 60 segundos
+        time.sleep(60)
 
-# Lanzar el hilo de keep_alive
 threading.Thread(target=keep_alive, daemon=True).start()
 
 if __name__ == "__main__":
