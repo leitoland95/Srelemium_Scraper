@@ -152,19 +152,26 @@ async def get_xpaths():
     driver.get(current_url)
     try:
         WebDriverWait(driver, 60).until(
-            EC.presence_of_all_elements_located((By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"))
+            EC.presence_of_all_elements_located(
+                (By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']")
+            )
         )
     except:
         return {"xpaths": []}
 
-    xpaths = []
+    elementos = []
     for el in driver.find_elements(By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"):
         if el.is_displayed():
             xp = build_xpath(el)
             if xp:
-                xpaths.append(xp)
+                # Obtener texto asociado
+                texto = el.text.strip() if el.text else None
+                # Para inputs, usar placeholder si no hay texto
+                if not texto:
+                    texto = el.get_attribute("placeholder") or el.get_attribute("value") or ""
+                elementos.append({"xpath": xp, "texto": texto})
 
-    return {"xpaths": xpaths}
+    return {"elementos": elementos}
 
 @app.post("/click")
 async def click_element(request: Request):
