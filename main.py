@@ -116,8 +116,7 @@ async def scrape():
         return {"error": "No URL set. Use /navigate first."}
 
     log(f"Scraping en {current_url}")
-    driver.get(current_url)
-
+    
     try:
         WebDriverWait(driver, 60).until(
             EC.presence_of_all_elements_located((By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"))
@@ -149,7 +148,7 @@ async def get_xpaths():
     if not current_url:
         return {"error": "No URL set. Use /navigate first."}
 
-    driver.get(current_url)
+    
     try:
         WebDriverWait(driver, 60).until(
             EC.presence_of_all_elements_located(
