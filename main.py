@@ -166,34 +166,25 @@ async def scrape():
 
 @app.post("/xpaths")
 async def get_xpaths():
+    if not current_url:
+        return {"error": "No URL set. Use /navigate first."}
+
+    try:
+        WebDriverWait(driver, 60).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"))
+        )
+    except Exception:
+        return {"xpaths": []}
+
     elementos = []
-
-    # Seleccionamos varios tipos de elementos relevantes
-    selectors = "//button | //input | //textarea | //*[@contenteditable='true'] | //a | //div | //span"
-    els = driver.find_elements(By.XPATH, selectors)
-
-    for idx, el in enumerate(els, start=1):
-        if not el.is_displayed():
-            continue
-
-        xp = build_xpath(el)
-        texto = el.text.strip() if el.text else ""
-        
-        # Construir identificador
-        ident = None
-        for attr in ["id", "name", "class", "aria-label", "placeholder"]:
-            val = el.get_attribute(attr)
-            if val:
-                ident = f"{attr}:{val}"
-                break
-        if not ident:
-            ident = texto if texto else f"element_{idx}"
-
-        elementos.append({
-            "id": ident,
-            "xpath": xp,
-            "texto": texto
-        })
+    for el in driver.find_elements(By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"):
+        if el.is_displayed():
+            xp = build_xpath(el)
+            if xp:
+                texto = el.text.strip() if el.text else None
+                if not texto:
+                    texto = el.get_attribute("placeholder") or el.get_attribute("value") or ""
+                elementos.append({"xpath": xp, "texto": texto})
 
     return {"elementos": elementos}
 
