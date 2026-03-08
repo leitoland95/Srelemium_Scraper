@@ -245,7 +245,7 @@ async def export_cookies():
 @app.post("/cookies/load")
 async def load_cookies():
     try:
-        local_path = Path("cookies.json")
+        local_path = Path("telegram_cookies.json")
         cookies = None
         source = None
 
