@@ -1,0 +1,11 @@
+[
+  {
+    "domain": "full-stack-z81t.onrender.com",
+    "httpOnly": true,
+    "name": "session_id",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": false,
+    "value": "abc123"
+  }
+]
