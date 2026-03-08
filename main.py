@@ -282,6 +282,44 @@ async def clear_cookies():
 @app.get("/logs")
 async def get_logs():
     return {"logs": execution_logs}
+    
+@app.post("/refresh")
+async def refresh_page():
+    try:
+        driver.refresh()
+        log("Página refrescada con driver.refresh()")
+        return {"status": "success", "message": "Página refrescada"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+        
+        
+@app.post("/scroll")
+async def scroll_page(request: Request):
+    try:
+        data = await request.json()
+        direction = data.get("direction", "down")  # "up" o "down"
+        pixels = int(data.get("pixels", 500))      # cantidad de píxeles
+        xpath = data.get("xpath")                  # opcional: scroll hasta un elemento
+
+        if xpath:
+            # Scroll hasta un elemento específico
+            el = driver.find_element(By.XPATH, xpath)
+            driver.execute_script("arguments[0].scrollIntoView();", el)
+            log(f"Scroll hacia elemento {xpath}")
+            return {"status": "success", "message": f"Scrolled to element {xpath}"}
+        else:
+            # Scroll por píxeles
+            if direction == "up":
+                driver.execute_script(f"window.scrollBy(0, -{pixels});")
+                log(f"Scroll hacia arriba {pixels}px")
+                return {"status": "success", "message": f"Scrolled up {pixels}px"}
+            else:
+                driver.execute_script(f"window.scrollBy(0, {pixels});")
+                log(f"Scroll hacia abajo {pixels}px")
+                return {"status": "success", "message": f"Scrolled down {pixels}px"}
+    except Exception as e:
+        log(f"Error en scroll: {e}")
+        return {"status": "error", "message": str(e)}            
 
 # --- Keep Alive ---
 def keep_alive():
