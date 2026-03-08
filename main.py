@@ -237,11 +237,40 @@ async def screenshot():
 @app.get("/cookies/export")
 async def export_cookies():
     try:
-        cookies = driver.get_cookies()
-        return {"status": "success", "cookies": cookies}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+        # Asegurarse de estar en un origen válido antes de leer storages
+        current = None
+        try:
+            current = driver.current_url
+        except Exception:
+            current = None
 
+        # Leer cookies HTTP
+        cookies = driver.get_cookies() or []
+
+        # Leer localStorage y sessionStorage (devuelven strings JSON)
+        local_storage = {}
+        session_storage = {}
+        try:
+            ls_json = driver.execute_script("return JSON.stringify(window.localStorage);")
+            ss_json = driver.execute_script("return JSON.stringify(window.sessionStorage);")
+            if ls_json:
+                local_storage = json.loads(ls_json)
+            if ss_json:
+                session_storage = json.loads(ss_json)
+        except Exception as e:
+            log(f"Warning: no se pudo leer local/session storage: {e}")
+
+        return {
+            "status": "success",
+            "current_url": current,
+            "cookies": cookies,
+            "localStorage": local_storage,
+            "sessionStorage": session_storage
+        }
+    except Exception as e:
+        log(f"Error en /cookies/export: {e}")
+        return {"status": "error", "message": str(e)}
+        
 @app.post("/cookies/load")
 async def load_cookies():
     try:
