@@ -238,33 +238,7 @@ async def screenshot():
 async def export_cookies():
     try:
         cookies = driver.get_cookies()
-        # Intentar guardar en la ruta del teléfono; si no existe, también guardar en el servidor
-        phone_path = Path("/storage/emulated/0/Documents/telegram_cookies.json")
-        server_path = COOKIES_FILE
-
-        saved_paths = []
-        # Guardar en servidor (siempre)
-        try:
-            with open(server_path, "w") as f:
-                json.dump(cookies, f)
-            saved_paths.append(str(server_path))
-            log(f"Cookies exportadas a {server_path}")
-        except Exception as e:
-            log(f"No se pudo guardar cookies en servidor: {e}")
-
-        # Intentar guardar en teléfono (si la ruta existe o se puede crear)
-        try:
-            phone_parent = phone_path.parent
-            if not phone_parent.exists():
-                phone_parent.mkdir(parents=True, exist_ok=True)
-            with open(phone_path, "w") as f:
-                json.dump(cookies, f)
-            saved_paths.append(str(phone_path))
-            log(f"Cookies exportadas a {phone_path}")
-        except Exception as e:
-            log(f"No se pudo guardar cookies en teléfono: {e}")
-
-        return {"status": "success", "saved": saved_paths}
+        return {"status": "success", "cookies": cookies}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
