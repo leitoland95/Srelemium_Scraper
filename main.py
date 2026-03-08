@@ -274,26 +274,43 @@ async def export_cookies():
 @app.post("/cookies/load")
 async def load_cookies():
     try:
-        # Leer archivo local con cookies y storages
-        with open("telegram_cookies.json", "r", encoding="utf-8") as f:
-            data = json.load(f)
+        local_path = Path("telegram_cookies.json")
+        cookies = None
+        source = None
 
-        cookies = data.get("cookies", [])
-        local_storage = data.get("localStorage", {})
-        session_storage = data.get("sessionStorage", {})
+        # 1. Intentar leer archivo local en el servidor (Render)
+        if local_path.exists():
+            with open(local_path, "r") as f:
+                cookies = json.load(f)
+            source = "local"
+            log("Cookies cargadas desde archivo local en servidor")
+        else:
+            # 2. Si no existe, intentar leer COOKIES_FILE (por si se guardó con otro nombre)
+            if COOKIES_FILE.exists():
+                with open(COOKIES_FILE, "r") as f:
+                    cookies = json.load(f)
+                source = "local"
+                log(f"Cookies cargadas desde {COOKIES_FILE}")
+            else:
+                # 3. Si no existe local, descargar desde tu repo remoto (raw GitHub)
+                repo_url = "https://raw.githubusercontent.com/tu_usuario/tu_repo/main/telegram_cookies.json"
+                resp = requests.get(repo_url, timeout=15)
+                if resp.status_code == 200:
+                    cookies = resp.json()
+                    source = "remote"
+                    log("Cookies descargadas desde repo remoto")
+                else:
+                    log(f"No se pudo descargar cookies desde repo remoto: {resp.status_code}")
+                    return {"status": "error", "message": f"No se pudo descargar cookies: {resp.status_code}"}
 
-        # Ir al dominio de Telegram Web
-        driver.get("https://web.telegram.org")
-
-        # Limpiar cookies previas
+        # Aplicar cookies en Selenium
         driver.delete_all_cookies()
-
-        # Restaurar cookies HTTP
         applied = 0
         for cookie in cookies:
             if "name" in cookie and "value" in cookie:
+                cookie_to_add = {k: cookie[k] for k in cookie if k in ("name", "value", "domain", "path", "expiry", "secure", "httpOnly")}
                 try:
-                    driver.add_cookie(cookie)
+                    driver.add_cookie(cookie_to_add)
                     applied += 1
                 except Exception:
                     try:
@@ -302,26 +319,15 @@ async def load_cookies():
                     except Exception as e:
                         log(f"No se pudo añadir cookie {cookie.get('name')}: {e}")
 
-        # Restaurar localStorage
-        for k, v in local_storage.items():
-            driver.execute_script("window.localStorage.setItem(arguments[0], arguments[1]);", k, v)
+        # Refrescar la página para que las cookies tomen efecto
+        if current_url:
+            try:
+                driver.refresh()
+            except Exception as e:
+                log(f"Error al refrescar después de cargar cookies: {e}")
 
-        # Restaurar sessionStorage
-        for k, v in session_storage.items():
-            driver.execute_script("window.sessionStorage.setItem(arguments[0], arguments[1]);", k, v)
-
-        # Refrescar la página para que tome efecto
-        driver.refresh()
-
-        log(f"Sesión restaurada: {applied} cookies, {len(local_storage)} claves localStorage, {len(session_storage)} claves sessionStorage")
-        return {
-            "status": "success",
-            "applied_cookies": applied,
-            "localStorage_keys": len(local_storage),
-            "sessionStorage_keys": len(session_storage)
-        }
+        return {"status": "success", "source": source, "applied_cookies": applied}
     except Exception as e:
-        log(f"Error al restaurar sesión: {e}")
         return {"status": "error", "message": str(e)}
 
 @app.post("/cookies/clear")
