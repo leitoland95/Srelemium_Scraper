@@ -1,11 +1,13 @@
-[
-  {
-    "domain": "full-stack-z81t.onrender.com",
-    "httpOnly": true,
-    "name": "session_id",
-    "path": "/",
-    "sameSite": "Lax",
-    "secure": false,
-    "value": "abc123"
-  }
-]
+{
+  "current_url": "https://web.telegram.org/a/",
+  "cookies": [],
+  "localStorage": {
+    "tgme_sync": "{\"canRedirect\":true,\"ts\":1772990082}",
+    "account1": "{\"dcId\":1,\"dc1_auth_key\":\"bc0aefb766d0e468fba07346c37c477b903c63b3586452e4d38df220ff2a6eb2ac4df8bd0fe9e67d352894d5b6868ab21132c39cc7907e8673cf5d9235744ec61e5a63959207e548595546dc37da98dfc1e5c9b9445439b2133cbc4a2ea6f038bed7cc2a342a1fa830bee8eebd03c1c539372de51e3d800ff0a7b95fbd78facabce7087c0ef7335244c0b1ad791a7454453075cd56625ad6c5ef072ab2810f1d38730aafe20dcf9c4453250b9a9567f96ef230862e8854eca8bbcea99e0b81f24a204f0cf4a257cb555828b43743be94a7abe4b5651840cfd3aa0523fcc2cca8fca7eff45ccf0a36388f07cec96c720e0b89465d649a8a98ffb657f54677b2e6\",\"userId\":\"1493057886\",\"firstName\":\"Alejandro\",\"isPremium\":false,\"phone\":\"5356182410\"}",
+    "user_auth": "{\"dcID\":1}",
+    "dc": "1",
+    "tt-multitab_1": "1",
+    "dc1_auth_key": "\"bc0aefb766d0e468fba07346c37c477b903c63b3586452e4d38df220ff2a6eb2ac4df8bd0fe9e67d352894d5b6868ab21132c39cc7907e8673cf5d9235744ec61e5a63959207e548595546dc37da98dfc1e5c9b9445439b2133cbc4a2ea6f038bed7cc2a342a1fa830bee8eebd03c1c539372de51e3d800ff0a7b95fbd78facabce7087c0ef7335244c0b1ad791a7454453075cd56625ad6c5ef072ab2810f1d38730aafe20dcf9c4453250b9a9567f96ef230862e8854eca8bbcea99e0b81f24a204f0cf4a257cb555828b43743be94a7abe4b5651840cfd3aa0523fcc2cca8fca7eff45ccf0a36388f07cec96c720e0b89465d649a8a98ffb657f54677b2e6\""
+  },
+  "sessionStorage": {}
+}
