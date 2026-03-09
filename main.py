@@ -34,30 +34,77 @@ def navegar(url: str):
     return {"status": "ok", "url": url}
 
 @app.get("/xpaths")
-def obtener_xpaths():
-    # Obtener el HTML completo
-    html_completo = driver.page_source
-
-    # Calcular el tamaño del recorte (primer 1/4 del HTML)
-    longitud_total = len(html_completo)
-    recorte = html_completo[:longitud_total // 4]
-
-    # Crear un DOM temporal con el recorte usando lxml
-    from lxml import html
-    dom = html.fromstring(recorte)
-
-    # Buscar elementos relevantes en el recorte
-    elementos = dom.xpath("//input|//button|//a|//div")
+def obtener_xpaths(limite: int = 3):
+    elementos = driver.find_elements(By.XPATH, "//input|//button|//a|//div")
     resultado = []
+    contador = {"input": 0, "button": 0, "div": 0, "a": 0}
+
     for e in elementos:
         try:
-            desc = e.get("name") or e.get("id") or (e.text or "").strip() or e.get("href")
-            # Construir un xpath relativo dentro del recorte
-            xpath_rel = dom.getpath(e)
-            resultado.append({"xpath": xpath_rel, "descripcion": desc})
+            tag = e.tag_name.lower()
+            if tag in contador and contador[tag] < limite:
+                desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("href")
+                resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": tag})
+                contador[tag] += 1
+
+                # Si ya alcanzamos el límite en todos los tipos, detenemos el bucle
+                if all(c >= limite for c in contador.values()):
+                    break
+        except Exception:
+            continue
+
+    return resultado
+    
+@app.get("/xpaths_inputs")
+def obtener_xpaths_inputs(limite: int = 3):
+    elementos = driver.find_elements(By.TAG_NAME, "input")
+    resultado = []
+    for e in elementos[:limite]:
+        try:
+            desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("placeholder")
+            resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": "input"})
         except Exception:
             continue
     return resultado
+
+
+@app.get("/xpaths_buttons")
+def obtener_xpaths_buttons(limite: int = 3):
+    elementos = driver.find_elements(By.TAG_NAME, "button")
+    resultado = []
+    for e in elementos[:limite]:
+        try:
+            desc = e.get_attribute("name") or e.get_attribute("id") or e.text
+            resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": "button"})
+        except Exception:
+            continue
+    return resultado
+
+
+@app.get("/xpaths_divs")
+def obtener_xpaths_divs(limite: int = 3):
+    elementos = driver.find_elements(By.TAG_NAME, "div")
+    resultado = []
+    for e in elementos[:limite]:
+        try:
+            desc = e.get_attribute("id") or e.get_attribute("class") or (e.text or "").strip()
+            resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": "div"})
+        except Exception:
+            continue
+    return resultado
+
+
+@app.get("/xpaths_links")
+def obtener_xpaths_links(limite: int = 3):
+    elementos = driver.find_elements(By.TAG_NAME, "a")
+    resultado = []
+    for e in elementos[:limite]:
+        try:
+            desc = e.text or e.get_attribute("href")
+            resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": "a"})
+        except Exception:
+            continue
+    return resultado    
 
 @app.get("/screenshots")
 def screenshot():
