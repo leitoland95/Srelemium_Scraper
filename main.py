@@ -34,34 +34,58 @@ def navegar(url: str):
     return {"status": "ok", "url": url}
 
 @app.get("/xpaths")
-def obtener_xpaths(tipo: str, limite: int = 3):
-    # Normalizar el tipo
-    tipo = tipo.lower()
-    if tipo not in ["input", "button", "div", "a"]:
-        return {"error": f"Tipo '{tipo}' no soportado. Usa: input, button, div, a"}
-
-    # Buscar elementos del tipo solicitado
-    elementos = driver.find_elements(By.TAG_NAME, tipo)
+def obtener_xpaths(limite: int = 3):
+    elementos = driver.find_elements(By.XPATH, "//input|//button|//a|//div")
     resultado = []
+    contador = {"input": 0, "button": 0, "div": 0, "a": 0}
 
-    for e in elementos[:limite]:
+    for e in elementos:
         try:
-            if tipo == "input":
-                desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("placeholder")
-            elif tipo == "button":
-                desc = e.get_attribute("name") or e.get_attribute("id") or e.text
-            elif tipo == "div":
-                desc = e.get_attribute("id") or e.get_attribute("class") or (e.text or "").strip()
-            elif tipo == "a":
-                desc = e.text or e.get_attribute("href")
-            else:
-                desc = ""
+            tag = e.tag_name.lower()
+            if tag in contador and contador[tag] < limite:
+                desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("href")
+                resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": tag})
+                contador[tag] += 1
 
-            resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": tipo})
+                # Si ya alcanzamos el límite en todos los tipos, detenemos el bucle
+                if all(c >= limite for c in contador.values()):
+                    break
         except Exception:
             continue
 
     return resultado
+    
+@app.get("/xpaths_inputs_buttons")
+def obtener_xpaths_inputs_buttons(limite: int = 10):
+    # Selecciona inputs y botones en todas sus variantes
+    elementos = driver.find_elements(
+        By.XPATH,
+        "//input | //button | //input[@type='button'] | //input[@type='submit'] | //*[@role='button']"
+    )
+    resultado = []
+    count = 0
+
+    for e in elementos:
+        if count >= limite:
+            break
+        try:
+            desc = (
+                e.get_attribute("name")
+                or e.get_attribute("id")
+                or e.get_attribute("placeholder")
+                or e.get_attribute("value")
+                or e.text
+            )
+            resultado.append({
+                "xpath": get_xpath(e),
+                "descripcion": desc,
+                "tipo": e.tag_name.lower()
+            })
+            count += 1
+        except Exception:
+            continue
+
+    return resultado    
     
 @app.get("/xpaths_inputs")
 def obtener_xpaths_inputs(limite: int = 3):
