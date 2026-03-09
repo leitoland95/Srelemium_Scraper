@@ -96,15 +96,6 @@ def exportar_cookies():
     log("Cookies y storage exportados")
     return data
 
-from fastapi import FastAPI
-from pathlib import Path
-import json
-from selenium import webdriver
-
-app = FastAPI()
-
-# Supongamos que ya tienes tu driver inicializado
-driver = webdriver.Chrome()
 
 @app.post("/cargarcookies")
 def cargar_cookies():
