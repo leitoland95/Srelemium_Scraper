@@ -197,6 +197,25 @@ def clicar(xpath: str):
     log(f"Clic en {xpath}")
     return {"status": "ok"}
 
+@app.post("/navegar_atras")
+def navegar_atras():
+    try:
+        driver.back()
+        log("Navegado un paso atrás")
+        return {"status": "ok", "accion": "back"}
+    except Exception as e:
+        return {"error": f"No se pudo navegar atrás: {e}"}
+        
+@app.post("/escribir_input")
+def escribir_input(xpath: str, texto: str):
+    try:
+        elem = driver.find_element(By.XPATH, xpath)
+        elem.clear()
+        elem.send_keys(texto)
+        log(f"Texto '{texto}' escrito en {xpath}")
+        return {"status": "ok", "xpath": xpath, "texto": texto}
+    except Exception as e:
+        return {"error": f"No se pudo escribir en el input {xpath}: {e}"}        
 
 @app.get("/exportar_cookies")
 def exportar_cookies():
