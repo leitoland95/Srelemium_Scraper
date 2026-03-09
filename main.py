@@ -10,6 +10,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 import uvicorn
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 
 app = FastAPI()
 execution_logs = []
@@ -34,26 +37,28 @@ def navegar(url: str):
     return {"status": "ok", "url": url}
 
 @app.get("/xpaths")
-def obtener_xpaths(limite: int = 3):
-    elementos = driver.find_elements(By.XPATH, "//input|//button|//a|//div")
-    resultado = []
-    contador = {"input": 0, "button": 0, "div": 0, "a": 0}
+def get_xpaths():
+    try:
+        WebDriverWait(driver, 60).until(
+            EC.presence_of_all_elements_located(
+                (By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']")
+            )
+        )
+    except:
+        return {"xpaths": []}
 
-    for e in elementos:
-        try:
-            tag = e.tag_name.lower()
-            if tag in contador and contador[tag] < limite:
-                desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("href")
-                resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": tag})
-                contador[tag] += 1
+    elementos = []
+    for el in driver.find_elements(By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"):
+        if el.is_displayed():
+            xp = build_xpath(el)
+            if xp:
+                desc = el.text.strip() if el.text else (
+                    el.get_attribute("placeholder") or el.get_attribute("value") or
+                    el.get_attribute("name") or el.get_attribute("id") or ""
+                )
+                elementos.append({"xpath": xp, "descripcion": desc, "tipo": el.tag_name.lower()})
 
-                # Si ya alcanzamos el límite en todos los tipos, detenemos el bucle
-                if all(c >= limite for c in contador.values()):
-                    break
-        except Exception:
-            continue
-
-    return resultado
+    return {"elementos": elementos}
     
 @app.get("/xpaths_inputs_buttons")
 def obtener_xpaths_inputs_buttons(limite: int = 10):
@@ -88,29 +93,47 @@ def obtener_xpaths_inputs_buttons(limite: int = 10):
     return resultado    
     
 @app.get("/xpaths_inputs")
-def obtener_xpaths_inputs(limite: int = 3):
-    elementos = driver.find_elements(By.TAG_NAME, "input")
-    resultado = []
-    for e in elementos[:limite]:
-        try:
-            desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("placeholder")
-            resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": "input"})
-        except Exception:
-            continue
-    return resultado
+def get_xpaths_inputs():
+    try:
+        WebDriverWait(driver, 60).until(
+            EC.presence_of_all_elements_located((By.TAG_NAME, "input"))
+        )
+    except:
+        return {"xpaths": []}
+
+    elementos = []
+    for el in driver.find_elements(By.TAG_NAME, "input"):
+        if el.is_displayed():
+            xp = build_xpath(el)
+            if xp:
+                desc = el.get_attribute("placeholder") or el.get_attribute("value") or \
+                       el.get_attribute("name") or el.get_attribute("id") or ""
+                elementos.append({"xpath": xp, "descripcion": desc, "tipo": "input"})
+
+    return {"elementos": elementos}
 
 
 @app.get("/xpaths_buttons")
-def obtener_xpaths_buttons(limite: int = 3):
-    elementos = driver.find_elements(By.TAG_NAME, "button")
-    resultado = []
-    for e in elementos[:limite]:
-        try:
-            desc = e.get_attribute("name") or e.get_attribute("id") or e.text
-            resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": "button"})
-        except Exception:
-            continue
-    return resultado
+def get_xpaths_buttons():
+    try:
+        WebDriverWait(driver, 60).until(
+            EC.presence_of_all_elements_located(
+                (By.XPATH, "//button | //*[@role='button'] | //input[@type='button'] | //input[@type='submit']")
+            )
+        )
+    except:
+        return {"xpaths": []}
+
+    elementos = []
+    for el in driver.find_elements(By.XPATH, "//button | //*[@role='button'] | //input[@type='button'] | //input[@type='submit']"):
+        if el.is_displayed():
+            xp = build_xpath(el)
+            if xp:
+                desc = el.text.strip() or el.get_attribute("value") or \
+                       el.get_attribute("name") or el.get_attribute("id") or ""
+                elementos.append({"xpath": xp, "descripcion": desc, "tipo": "button"})
+
+    return {"elementos": elementos}
 
 
 @app.get("/xpaths_divs")
@@ -137,6 +160,27 @@ def obtener_xpaths_links(limite: int = 3):
         except Exception:
             continue
     return resultado    
+    
+@app.get("/xpaths_textareas")
+def get_xpaths_textareas():
+    try:
+        WebDriverWait(driver, 60).until(
+            EC.presence_of_all_elements_located((By.TAG_NAME, "textarea"))
+        )
+    except:
+        return {"xpaths": []}
+
+    elementos = []
+    for el in driver.find_elements(By.TAG_NAME, "textarea"):
+        if el.is_displayed():
+            xp = build_xpath(el)
+            if xp:
+                desc = el.get_attribute("name") or el.get_attribute("id") or \
+                       el.get_attribute("placeholder") or el.text.strip() or ""
+                elementos.append({"xpath": xp, "descripcion": desc, "tipo": "textarea"})
+
+    return {"elementos": elementos}    
+    
 
 @app.get("/screenshots")
 def screenshot():
