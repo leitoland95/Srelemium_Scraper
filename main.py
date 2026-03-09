@@ -14,9 +14,9 @@ import uvicorn
 app = FastAPI()
 execution_logs = []
 
-# Inicializar WebDriver
+# ------------------- INICIALIZAR WEBDRIVER -------------------
 chrome_options = Options()
-chrome_options.add_argument("--headless")
+chrome_options.add_argument("--headless=new")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 driver = webdriver.Chrome(options=chrome_options)
@@ -34,19 +34,22 @@ def navegar(url: str):
     return {"status": "ok", "url": url}
 
 @app.get("/xpaths")
-def obtener_xpaths():
+def obtener_xpaths(zona: str = "superior"):
+    total_height = driver.execute_script("return document.body.scrollHeight;")
+    mitad = total_height / 2
     elementos = driver.find_elements(By.XPATH, "//input|//button|//a|//div")
     resultado = []
     for e in elementos:
         try:
-            desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("href")
-            resultado.append({"xpath": get_xpath(e), "descripcion": desc})
+            y = e.location['y']
+            if (zona == "superior" and y <= mitad) or (zona == "inferior" and y > mitad):
+                desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("href")
+                resultado.append({"xpath": get_xpath(e), "descripcion": desc})
         except Exception:
             continue
     return resultado
 
 def get_xpath(element):
-    # Construir un xpath absoluto
     path = ""
     while element is not None and element.tag_name.lower() != "html":
         parent = element.find_element(By.XPATH, "..")
@@ -96,32 +99,23 @@ def exportar_cookies():
     log("Cookies y storage exportados")
     return data
 
-
 @app.post("/cargarcookies")
 def cargar_cookies():
-    path = Path("telegram_cookies.json")
+    path = Path("telegramcookies.json")
     if not path.exists():
-        return {"error": "telegram_cookies.json no encontrado"}
+        return {"error": "telegramcookies.json no encontrado"}
 
-    # Leer archivo JSON
     with open(path, "r") as f:
         data = json.load(f)
 
-    # Ir al dominio correcto antes de cargar cookies
     driver.get("https://web.telegram.org")
-
-    # Cargar cookies
     driver.delete_all_cookies()
     for c in data.get("cookies", []):
         try:
             driver.add_cookie(c)
         except Exception as e:
-            print(f"Error al cargar cookie {c}: {e}")
+            log(f"Error al cargar cookie {c.get('name')}: {e}")
 
-    # Refrescar para aplicar cookies
-    driver.refresh()
-
-    # Cargar localStorage y sessionStorage
     driver.execute_script(f"""
         let localData = {json.dumps(data.get("localStorage", {}))};
         for (let key in localData) {{ localStorage.setItem(key, localData[key]); }}
@@ -129,9 +123,8 @@ def cargar_cookies():
         for (let key in sessionData) {{ sessionStorage.setItem(key, sessionData[key]); }}
     """)
 
-    # Refrescar otra vez para aplicar storages
     driver.refresh()
-
+    log("Cookies y storage cargados desde telegramcookies.json")
     return {"status": "Sesión restaurada correctamente"}
 
 @app.post("/limpiar_cookies")
@@ -142,23 +135,15 @@ def limpiar_cookies():
 
 @app.get("/mostrar_cookies")
 def mostrar_cookies():
-    # Obtener cookies
     cookies = driver.get_cookies()
-
-    # Obtener localStorage y sessionStorage
     local_storage = driver.execute_script("return JSON.stringify(window.localStorage);")
     session_storage = driver.execute_script("return JSON.stringify(window.sessionStorage);")
-
     data = {
         "cookies": cookies,
         "localStorage": json.loads(local_storage),
         "sessionStorage": json.loads(session_storage)
     }
-
     log(f"Cookies actuales: {cookies}")
-    log(f"LocalStorage keys: {list(data['localStorage'].keys())}")
-    log(f"SessionStorage keys: {list(data['sessionStorage'].keys())}")
-
     return data
 
 # ------------------- KEEP ALIVE -------------------
