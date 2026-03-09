@@ -96,26 +96,52 @@ def exportar_cookies():
     log("Cookies y storage exportados")
     return data
 
+from fastapi import FastAPI
+from pathlib import Path
+import json
+from selenium import webdriver
+
+app = FastAPI()
+
+# Supongamos que ya tienes tu driver inicializado
+driver = webdriver.Chrome()
+
 @app.post("/cargarcookies")
 def cargar_cookies():
     path = Path("telegram_cookies.json")
     if not path.exists():
         return {"error": "telegram_cookies.json no encontrado"}
+
+    # Leer archivo JSON
     with open(path, "r") as f:
         data = json.load(f)
+
+    # Ir al dominio correcto antes de cargar cookies
+    driver.get("https://web.telegram.org")
+
     # Cargar cookies
     driver.delete_all_cookies()
     for c in data.get("cookies", []):
-        driver.add_cookie(c)
-    # Cargar storages
+        try:
+            driver.add_cookie(c)
+        except Exception as e:
+            print(f"Error al cargar cookie {c}: {e}")
+
+    # Refrescar para aplicar cookies
+    driver.refresh()
+
+    # Cargar localStorage y sessionStorage
     driver.execute_script(f"""
         let localData = {json.dumps(data.get("localStorage", {}))};
         for (let key in localData) {{ localStorage.setItem(key, localData[key]); }}
         let sessionData = {json.dumps(data.get("sessionStorage", {}))};
         for (let key in sessionData) {{ sessionStorage.setItem(key, sessionData[key]); }}
     """)
-    log("Cookies y storage cargados desde telegram_cookies.json")
-    return {"status": "ok"}
+
+    # Refrescar otra vez para aplicar storages
+    driver.refresh()
+
+    return {"status": "Sesión restaurada correctamente"}
 
 @app.post("/limpiar_cookies")
 def limpiar_cookies():
