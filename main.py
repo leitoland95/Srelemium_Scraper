@@ -34,22 +34,30 @@ def navegar(url: str):
     return {"status": "ok", "url": url}
 
 @app.get("/xpaths")
-def obtener_xpaths(limite: int = 3):
-    elementos = driver.find_elements(By.XPATH, "//input|//button|//a|//div")
+def obtener_xpaths(tipo: str, limite: int = 3):
+    # Normalizar el tipo
+    tipo = tipo.lower()
+    if tipo not in ["input", "button", "div", "a"]:
+        return {"error": f"Tipo '{tipo}' no soportado. Usa: input, button, div, a"}
+
+    # Buscar elementos del tipo solicitado
+    elementos = driver.find_elements(By.TAG_NAME, tipo)
     resultado = []
-    contador = {"input": 0, "button": 0, "div": 0, "a": 0}
 
-    for e in elementos:
+    for e in elementos[:limite]:
         try:
-            tag = e.tag_name.lower()
-            if tag in contador and contador[tag] < limite:
-                desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("href")
-                resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": tag})
-                contador[tag] += 1
+            if tipo == "input":
+                desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("placeholder")
+            elif tipo == "button":
+                desc = e.get_attribute("name") or e.get_attribute("id") or e.text
+            elif tipo == "div":
+                desc = e.get_attribute("id") or e.get_attribute("class") or (e.text or "").strip()
+            elif tipo == "a":
+                desc = e.text or e.get_attribute("href")
+            else:
+                desc = ""
 
-                # Si ya alcanzamos el límite en todos los tipos, detenemos el bucle
-                if all(c >= limite for c in contador.values()):
-                    break
+            resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": tipo})
         except Exception:
             continue
 
