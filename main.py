@@ -180,7 +180,66 @@ def get_xpaths_textareas():
                 elementos.append({"xpath": xp, "descripcion": desc, "tipo": "textarea"})
 
     return {"elementos": elementos}    
-    
+
+def build_xpath(el):
+    return driver.execute_script(
+        """function absoluteXPath(element){
+            var comp, comps = [];
+            var parent = null;
+            var xpath = '';
+            var getPos = function(element){
+                var position = 1, curNode;
+                for (curNode = element.previousSibling; curNode; curNode = curNode.previousSibling){
+                    if (curNode.nodeName == element.nodeName){
+                        ++position;
+                    }
+                }
+                return position;
+            };
+            if (element instanceof Document){
+                return '/';
+            }
+            for (; element && !(element instanceof Document); element = element.parentNode){
+                comp = comps[comps.length] = {};
+                comp.name = element.nodeName;
+                comp.position = getPos(element);
+            }
+            for (var i = comps.length - 1; i >= 0; i--){
+                comp = comps[i];
+                xpath += '/' + comp.name.toLowerCase();
+                if (comp.position != null){
+                    xpath += '[' + comp.position + ']';
+                }
+            }
+            return xpath;
+        } return absoluteXPath(arguments[0]);""", el)
+
+@app.get("/xpaths_buttons_full")
+def get_xpaths_buttons_full():
+    try:
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_all_elements_located(
+                (By.XPATH, "//button | //*[@role='button'] | //input[@type='button'] | //input[@type='submit']")
+            )
+        )
+    except Exception as e:
+        return {"error": f"No se encontraron botones: {e}"}
+
+    elementos = []
+    for el in driver.find_elements(By.XPATH, "//button | //*[@role='button'] | //input[@type='button'] | //input[@type='submit']"):
+        if el.is_displayed():
+            xp = build_xpath(el)
+            if xp:
+                desc = el.text.strip() or el.get_attribute("value") or \
+                       el.get_attribute("name") or el.get_attribute("id") or ""
+                elementos.append({
+                    "xpath": xp,
+                    "descripcion": desc,
+                    "tipo": el.tag_name.lower()
+                })
+
+    return {"botones": elementos}    
+            
 
 @app.get("/screenshots")
 def screenshot():
