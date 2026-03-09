@@ -9,21 +9,27 @@ from fastapi import FastAPI
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
 import uvicorn
 
 app = FastAPI()
 execution_logs = []
 
-# Inicializar WebDriver
-chrome_options = Options()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
-driver = webdriver.Chrome(options=chrome_options)
-
 def log(msg: str):
     execution_logs.append(msg)
     print(msg)
+
+# ------------------- INICIALIZACIÓN DEL DRIVER -------------------
+
+chrome_options = Options()
+chrome_options.add_argument("--headless=new")  # headless moderno
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.binary_location = "/usr/bin/chromium"  # binario en contenedor Debian slim
+
+service = Service("/usr/bin/chromedriver")  # ruta del chromedriver
+driver = webdriver.Chrome(service=service, options=chrome_options)
 
 # ------------------- ENDPOINTS -------------------
 
@@ -46,7 +52,6 @@ def obtener_xpaths():
     return resultado
 
 def get_xpath(element):
-    # Construir un xpath absoluto
     path = ""
     while element is not None and element.tag_name.lower() != "html":
         parent = element.find_element(By.XPATH, "..")
@@ -96,41 +101,26 @@ def exportar_cookies():
     log("Cookies y storage exportados")
     return data
 
-from fastapi import FastAPI
-from pathlib import Path
-import json
-from selenium import webdriver
-
-app = FastAPI()
-
-# Supongamos que ya tienes tu driver inicializado
-driver = webdriver.Chrome()
-
 @app.post("/cargarcookies")
 def cargar_cookies():
-    path = Path("telegram_cookies.json")
+    path = Path("telegramcookies.json")
     if not path.exists():
-        return {"error": "telegram_cookies.json no encontrado"}
+        return {"error": "telegramcookies.json no encontrado"}
 
-    # Leer archivo JSON
     with open(path, "r") as f:
         data = json.load(f)
 
-    # Ir al dominio correcto antes de cargar cookies
+    # Navegar al dominio correcto antes de cargar cookies
     driver.get("https://web.telegram.org")
 
-    # Cargar cookies
     driver.delete_all_cookies()
     for c in data.get("cookies", []):
         try:
             driver.add_cookie(c)
         except Exception as e:
-            print(f"Error al cargar cookie {c}: {e}")
+            log(f"Error al cargar cookie {c.get('name')}: {e}")
 
-    # Refrescar para aplicar cookies
-    driver.refresh()
-
-    # Cargar localStorage y sessionStorage
+    # Inyectar storages
     driver.execute_script(f"""
         let localData = {json.dumps(data.get("localStorage", {}))};
         for (let key in localData) {{ localStorage.setItem(key, localData[key]); }}
@@ -138,9 +128,8 @@ def cargar_cookies():
         for (let key in sessionData) {{ sessionStorage.setItem(key, sessionData[key]); }}
     """)
 
-    # Refrescar otra vez para aplicar storages
     driver.refresh()
-
+    log("Cookies y storage cargados desde telegramcookies.json")
     return {"status": "Sesión restaurada correctamente"}
 
 @app.post("/limpiar_cookies")
