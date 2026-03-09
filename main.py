@@ -34,30 +34,23 @@ def navegar(url: str):
     return {"status": "ok", "url": url}
 
 @app.get("/xpaths")
-def obtener_xpaths(zona: str = "superior"):
+def obtener_xpaths():
+    # Altura total del documento
     total_height = driver.execute_script("return document.body.scrollHeight;")
-    mitad = total_height / 2
+    limite = total_height / 4  # primer cuarto superior
+
+    # Buscar elementos relevantes
     elementos = driver.find_elements(By.XPATH, "//input|//button|//a|//div")
     resultado = []
     for e in elementos:
         try:
             y = e.location['y']
-            if (zona == "superior" and y <= mitad) or (zona == "inferior" and y > mitad):
+            if y <= limite:  # solo los del primer cuarto superior
                 desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("href")
                 resultado.append({"xpath": get_xpath(e), "descripcion": desc})
         except Exception:
             continue
     return resultado
-
-def get_xpath(element):
-    path = ""
-    while element is not None and element.tag_name.lower() != "html":
-        parent = element.find_element(By.XPATH, "..")
-        siblings = parent.find_elements(By.XPATH, element.tag_name)
-        index = siblings.index(element) + 1
-        path = f"/{element.tag_name}[{index}]" + path
-        element = parent
-    return "/html" + path
 
 @app.get("/screenshots")
 def screenshot():
