@@ -35,19 +35,26 @@ def navegar(url: str):
 
 @app.get("/xpaths")
 def obtener_xpaths():
-    # Altura total del documento
-    total_height = driver.execute_script("return document.body.scrollHeight;")
-    limite = total_height / 4  # primer cuarto superior
+    # Obtener el HTML completo
+    html_completo = driver.page_source
 
-    # Buscar elementos relevantes
-    elementos = driver.find_elements(By.XPATH, "//input|//button|//a|//div")
+    # Calcular el tamaño del recorte (primer 1/4 del HTML)
+    longitud_total = len(html_completo)
+    recorte = html_completo[:longitud_total // 4]
+
+    # Crear un DOM temporal con el recorte usando lxml
+    from lxml import html
+    dom = html.fromstring(recorte)
+
+    # Buscar elementos relevantes en el recorte
+    elementos = dom.xpath("//input|//button|//a|//div")
     resultado = []
     for e in elementos:
         try:
-            y = e.location['y']
-            if y <= limite:  # solo los del primer cuarto superior
-                desc = e.get_attribute("name") or e.get_attribute("id") or e.text or e.get_attribute("href")
-                resultado.append({"xpath": get_xpath(e), "descripcion": desc})
+            desc = e.get("name") or e.get("id") or (e.text or "").strip() or e.get("href")
+            # Construir un xpath relativo dentro del recorte
+            xpath_rel = dom.getpath(e)
+            resultado.append({"xpath": xpath_rel, "descripcion": desc})
         except Exception:
             continue
     return resultado
