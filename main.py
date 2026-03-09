@@ -27,160 +27,7 @@ driver = webdriver.Chrome(options=chrome_options)
 def log(msg: str):
     execution_logs.append(msg)
     print(msg)
-
-# ------------------- ENDPOINTS -------------------
-
-@app.post("/navegar")
-def navegar(url: str):
-    driver.get(url)
-    log(f"Navegado a {url}")
-    return {"status": "ok", "url": url}
-
-@app.get("/xpaths")
-def get_xpaths():
-    try:
-        WebDriverWait(driver, 60).until(
-            EC.presence_of_all_elements_located(
-                (By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']")
-            )
-        )
-    except:
-        return {"xpaths": []}
-
-    elementos = []
-    for el in driver.find_elements(By.XPATH, "//button | //input | //textarea | //*[@contenteditable='true']"):
-        if el.is_displayed():
-            xp = build_xpath(el)
-            if xp:
-                desc = el.text.strip() if el.text else (
-                    el.get_attribute("placeholder") or el.get_attribute("value") or
-                    el.get_attribute("name") or el.get_attribute("id") or ""
-                )
-                elementos.append({"xpath": xp, "descripcion": desc, "tipo": el.tag_name.lower()})
-
-    return {"elementos": elementos}
     
-@app.get("/xpaths_inputs_buttons")
-def obtener_xpaths_inputs_buttons(limite: int = 10):
-    # Selecciona inputs y botones en todas sus variantes
-    elementos = driver.find_elements(
-        By.XPATH,
-        "//input | //button | //input[@type='button'] | //input[@type='submit'] | //*[@role='button']"
-    )
-    resultado = []
-    count = 0
-
-    for e in elementos:
-        if count >= limite:
-            break
-        try:
-            desc = (
-                e.get_attribute("name")
-                or e.get_attribute("id")
-                or e.get_attribute("placeholder")
-                or e.get_attribute("value")
-                or e.text
-            )
-            resultado.append({
-                "xpath": get_xpath(e),
-                "descripcion": desc,
-                "tipo": e.tag_name.lower()
-            })
-            count += 1
-        except Exception:
-            continue
-
-    return resultado    
-    
-@app.get("/xpaths_inputs")
-def get_xpaths_inputs():
-    try:
-        WebDriverWait(driver, 60).until(
-            EC.presence_of_all_elements_located((By.TAG_NAME, "input"))
-        )
-    except:
-        return {"xpaths": []}
-
-    elementos = []
-    for el in driver.find_elements(By.TAG_NAME, "input"):
-        if el.is_displayed():
-            xp = build_xpath(el)
-            if xp:
-                desc = el.get_attribute("placeholder") or el.get_attribute("value") or \
-                       el.get_attribute("name") or el.get_attribute("id") or ""
-                elementos.append({"xpath": xp, "descripcion": desc, "tipo": "input"})
-
-    return {"elementos": elementos}
-
-
-@app.get("/xpaths_buttons")
-def get_xpaths_buttons():
-    try:
-        WebDriverWait(driver, 60).until(
-            EC.presence_of_all_elements_located(
-                (By.XPATH, "//button | //*[@role='button'] | //input[@type='button'] | //input[@type='submit']")
-            )
-        )
-    except:
-        return {"xpaths": []}
-
-    elementos = []
-    for el in driver.find_elements(By.XPATH, "//button | //*[@role='button'] | //input[@type='button'] | //input[@type='submit']"):
-        if el.is_displayed():
-            xp = build_xpath(el)
-            if xp:
-                desc = el.text.strip() or el.get_attribute("value") or \
-                       el.get_attribute("name") or el.get_attribute("id") or ""
-                elementos.append({"xpath": xp, "descripcion": desc, "tipo": "button"})
-
-    return {"elementos": elementos}
-
-
-@app.get("/xpaths_divs")
-def obtener_xpaths_divs(limite: int = 3):
-    elementos = driver.find_elements(By.TAG_NAME, "div")
-    resultado = []
-    for e in elementos[:limite]:
-        try:
-            desc = e.get_attribute("id") or e.get_attribute("class") or (e.text or "").strip()
-            resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": "div"})
-        except Exception:
-            continue
-    return resultado
-
-
-@app.get("/xpaths_links")
-def obtener_xpaths_links(limite: int = 3):
-    elementos = driver.find_elements(By.TAG_NAME, "a")
-    resultado = []
-    for e in elementos[:limite]:
-        try:
-            desc = e.text or e.get_attribute("href")
-            resultado.append({"xpath": get_xpath(e), "descripcion": desc, "tipo": "a"})
-        except Exception:
-            continue
-    return resultado    
-    
-@app.get("/xpaths_textareas")
-def get_xpaths_textareas():
-    try:
-        WebDriverWait(driver, 60).until(
-            EC.presence_of_all_elements_located((By.TAG_NAME, "textarea"))
-        )
-    except:
-        return {"xpaths": []}
-
-    elementos = []
-    for el in driver.find_elements(By.TAG_NAME, "textarea"):
-        if el.is_displayed():
-            xp = build_xpath(el)
-            if xp:
-                desc = el.get_attribute("name") or el.get_attribute("id") or \
-                       el.get_attribute("placeholder") or el.text.strip() or ""
-                elementos.append({"xpath": xp, "descripcion": desc, "tipo": "textarea"})
-
-    return {"elementos": elementos}    
-
 def build_xpath(el):
     return driver.execute_script(
         """function absoluteXPath(element){
@@ -212,9 +59,99 @@ def build_xpath(el):
                 }
             }
             return xpath;
-        } return absoluteXPath(arguments[0]);""", el)
+        } return absoluteXPath(arguments[0]);""", el)      
 
-@app.get("/xpaths_buttons_full")
+# ------------------- ENDPOINTS -------------------
+
+
+@app.post("/navegar")
+def navegar(url: str):
+    driver.get(url)
+    log(f"Navegado a {url}")
+    return {"status": "ok", "url": url}
+
+
+
+@app.get("/xpaths_divs")
+def get_xpaths_divs_full():
+    try:
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//div"))
+        )
+    except Exception as e:
+        return {"error": f"No se encontraron divs: {e}"}
+
+    elementos = []
+    for el in driver.find_elements(By.XPATH, "//div"):
+        if el.is_displayed():
+            xp = build_xpath(el)
+            if xp:
+                # Para divs, la descripción puede ser su texto interno o atributos relevantes
+                desc = el.text.strip() or el.get_attribute("id") or \
+                       el.get_attribute("class") or ""
+                elementos.append({
+                    "xpath": xp,
+                    "descripcion": desc,
+                    "tipo": el.tag_name.lower()
+                })
+
+    return {"divs": elementos}
+
+
+@app.get("/xpaths_links")
+def get_xpaths_links_full():
+    try:
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//a"))
+        )
+    except Exception as e:
+        return {"error": f"No se encontraron enlaces: {e}"}
+
+    elementos = []
+    for el in driver.find_elements(By.XPATH, "//a"):
+        if el.is_displayed():
+            xp = build_xpath(el)
+            if xp:
+                # Para enlaces, la descripción puede ser el texto visible o atributos relevantes
+                desc = el.text.strip() or el.get_attribute("href") or \
+                       el.get_attribute("title") or el.get_attribute("id") or ""
+                elementos.append({
+                    "xpath": xp,
+                    "descripcion": desc,
+                    "tipo": el.tag_name.lower()
+                })
+
+    return {"links": elementos}
+    
+@app.get("/xpaths_inputs")
+def get_xpaths_inputs_full():
+    try:
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_all_elements_located(
+                (By.XPATH, "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | //input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | //textarea")
+            )
+        )
+    except Exception as e:
+        return {"error": f"No se encontraron inputs: {e}"}
+
+    elementos = []
+    for el in driver.find_elements(By.XPATH, "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | //input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | //textarea"):
+        if el.is_displayed():
+            xp = build_xpath(el)
+            if xp:
+                desc = el.get_attribute("placeholder") or el.get_attribute("name") or \
+                       el.get_attribute("id") or el.get_attribute("value") or ""
+                elementos.append({
+                    "xpath": xp,
+                    "descripcion": desc,
+                    "tipo": el.tag_name.lower()
+                })
+
+    return {"inputs": elementos}
+    
+
+
+@app.get("/xpaths_buttons")
 def get_xpaths_buttons_full():
     try:
         WebDriverWait(driver, 30).until(
@@ -260,13 +197,6 @@ def clicar(xpath: str):
     log(f"Clic en {xpath}")
     return {"status": "ok"}
 
-@app.post("/input")
-def escribir(xpath: str, texto: str):
-    elem = driver.find_element(By.XPATH, xpath)
-    elem.clear()
-    elem.send_keys(texto)
-    log(f"Texto '{texto}' introducido en {xpath}")
-    return {"status": "ok"}
 
 @app.get("/exportar_cookies")
 def exportar_cookies():
