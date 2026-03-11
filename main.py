@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 import uvicorn
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
+from fastapi import Body
 
 app = FastAPI()
 execution_logs = []
@@ -64,6 +64,42 @@ def build_xpath(el):
 # ------------------- ENDPOINTS -------------------
 
 
+
+@app.post("/buscar_xpath")
+def buscar_xpath_por_descripcion(descripcion: str = Body(..., embed=True)):
+    try:
+        # Recolectamos elementos relevantes: divs, links, inputs, botones
+        elementos = driver.find_elements(By.XPATH, "//div | //a | //input | //textarea | //button | //*[@role='button']")
+        resultados = []
+
+        for el in elementos:
+            if not el.is_displayed():
+                continue
+
+            xp = build_xpath(el)
+            if not xp:
+                continue
+
+            # Construimos una descripción similar a la de tus otros endpoints
+            desc = el.text.strip() or el.get_attribute("placeholder") or el.get_attribute("value") or \
+                   el.get_attribute("name") or el.get_attribute("id") or el.get_attribute("href") or ""
+
+            # Comparamos con la descripción recibida (case-insensitive, substring)
+            if descripcion.lower() in desc.lower():
+                resultados.append({
+                    "xpath": xp,
+                    "descripcion": desc,
+                    "tipo": el.tag_name.lower()
+                })
+
+        if resultados:
+            log(f"Encontrados {len(resultados)} elementos con descripción '{descripcion}'")
+            return {"resultados": resultados}
+        else:
+            return {"resultados": [], "mensaje": f"No se encontraron elementos con descripción '{descripcion}'"}
+
+    except Exception as e:
+        return {"error": f"Error al buscar descripción '{descripcion}': {e}"}
 @app.post("/navegar")
 def navegar(url: str):
     driver.get(url)
