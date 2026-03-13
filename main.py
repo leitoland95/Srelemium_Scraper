@@ -242,16 +242,29 @@ def navegar_atras():
     except Exception as e:
         return {"error": f"No se pudo navegar atrás: {e}"}
         
-@app.post("/escribir_input")
-def escribir_input(xpath: str, texto: str):
+@app.get("/escribir_input")
+def escribir_unico_input():
     try:
-        elem = driver.find_element(By.XPATH, xpath)
-        elem.clear()
-        elem.send_keys(texto)
-        log(f"Texto '{texto}' escrito en {xpath}")
-        return {"status": "ok", "xpath": xpath, "texto": texto}
+        # Espera hasta que haya al menos un input o textarea visible
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | //input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | //textarea")
+            )
+        )
     except Exception as e:
-        return {"error": f"No se pudo escribir en el input {xpath}: {e}"}        
+        return {"error": f"No se encontró ningún input: {e}"}
+
+    try:
+        # Obtiene el primer input/textarea visible
+        el = driver.find_element(By.XPATH, "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | //input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | //textarea")
+        if el.is_displayed():
+            el.clear()  # Limpia el campo antes de escribir
+            el.send_keys("@RichDogGameBot")
+            return {"resultado": "Texto '@RichDogGameBot' escrito en el único input"}
+        else:
+            return {"error": "El input encontrado no está visible"}
+    except Exception as e:
+        return {"error": f"No se pudo escribir en el input: {e}"}
 
 @app.get("/exportar_cookies")
 def exportar_cookies():
