@@ -232,6 +232,22 @@ def clicar(xpath: str):
     elem.click()
     log(f"Clic en {xpath}")
     return {"status": "ok"}
+    
+@app.get("/clicar_1")
+def clicar():
+    xpath = "/html/body/div[1]/button[1]"  # <-- XPath fijo
+    try:
+        elem = driver.find_element(By.XPATH, xpath)
+        try:
+            elem.click()
+        except:
+            driver.execute_script("arguments[0].click();", elem)
+
+        log(f"Clic en {xpath}")
+        return {"status": "ok"}
+    except Exception as e:
+        log(f"Error al clicar {xpath}: {e}")
+        return {"status": "error"}    
 
 @app.post("/navegar_atras")
 def navegar_atras():
@@ -326,6 +342,55 @@ def mostrar_cookies():
     log(f"Cookies actuales: {cookies}")
     return data
 
+@app.get("/clicar_chat")
+def clicar_chat():
+    xpath = "/html[1]/body[1]/div[2]/div[1]/div[3]/div[1]/div[1]/div[3]/div[2]/div[2]/div[2]/div[1]/div[1]/div[1]/div[1]/ul[1]/a[1]"  # <-- XPath fijo
+    try:
+        elem = driver.find_element(By.XPATH, xpath)
+        try:
+            elem.click()
+        except:
+            driver.execute_script("arguments[0].click();", elem)
+
+        log(f"Clic en {xpath}")
+        return {"status": "ok"}
+    except Exception as e:
+        log(f"Error al clicar {xpath}: {e}")
+        return {"status": "error"}
+        
+        
+@app.get("/clicar_abrir")        
+def clicar_abrir():
+    xpath = "/html[1]/body[1]/div[2]/div[1]/div[4]/div[1]/div[1]/div[3]/div[2]/div[2]/section[9]/div[4]/div[1]/div[1]/div[2]/div[1]/a[1]"  # <-- XPath fijo
+    try:
+        elem = driver.find_element(By.XPATH, xpath)
+        try:
+            elem.click()
+        except:
+            driver.execute_script("arguments[0].click();", elem)
+
+        log(f"Clic en {xpath}")
+        return {"status": "ok"}
+    except Exception as e:
+        log(f"Error al clicar {xpath}: {e}")
+        return {"status": "error"}
+        
+@app.get("/clicar_confirmar")         
+def clicar_confirmar():
+    xpath = "/html[1]/body[1]/div[8]/div[1]/div[2]/button[1]"  # <-- XPath fijo
+    try:
+        elem = driver.find_element(By.XPATH, xpath)
+        try:
+            elem.click()
+        except:
+            driver.execute_script("arguments[0].click();", elem)
+
+        log(f"Clic en {xpath}")
+        return {"status": "ok"}
+    except Exception as e:
+        log(f"Error al clicar {xpath}: {e}")
+        return {"status": "error"}                        
+        
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
