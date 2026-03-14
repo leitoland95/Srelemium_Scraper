@@ -174,7 +174,6 @@ def get_xpaths_inputs_full():
         return {"error": f"No se encontraron inputs ni checkboxes: {e}"}
         
 @app.get("/checkboxes")
-@app.get("/xpaths_checkboxes")
 def get_xpaths_checkboxes():
     try:
         WebDriverWait(driver, 30).until(
