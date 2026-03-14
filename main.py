@@ -164,28 +164,55 @@ def get_xpaths_inputs_full():
     try:
         WebDriverWait(driver, 30).until(
             EC.presence_of_all_elements_located(
-                (By.XPATH, "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | //input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | //textarea")
+                (By.XPATH,
+                 "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | "
+                 "//input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | "
+                 "//textarea | //input[@type='checkbox']")
             )
         )
     except Exception as e:
-        return {"error": f"No se encontraron inputs: {e}"}
+        return {"error": f"No se encontraron inputs ni checkboxes: {e}"}
 
     elementos = []
-    for el in driver.find_elements(By.XPATH, "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | //input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | //textarea"):
+    for el in driver.find_elements(
+        By.XPATH,
+        "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | "
+        "//input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | "
+        "//textarea | //input[@type='checkbox']"
+    ):
         if el.is_displayed():
             xp = build_xpath(el)
             if xp:
-                desc = el.get_attribute("placeholder") or el.get_attribute("name") or \
-                       el.get_attribute("id") or el.get_attribute("value") or ""
+                # descripción: primero label asociado, si no existe usar atributos
+                desc = ""
+                try:
+                    label = el.find_element(By.XPATH, "following-sibling::label")
+                    desc = label.text.strip()
+                except:
+                    pass
+
+                if not desc:
+                    desc = el.get_attribute("placeholder") or el.get_attribute("name") or \
+                           el.get_attribute("id") or el.get_attribute("value") or \
+                           el.get_attribute("aria-label") or el.get_attribute("title") or ""
+
                 elementos.append({
                     "xpath": xp,
                     "descripcion": desc,
-                    "tipo": el.tag_name.lower()
+                    "tipo": el.get_attribute("type") if el.tag_name.lower() == "input" else el.tag_name.lower()
                 })
 
     return {"inputs": elementos}
-    
 
+        
+@app.post("/input")
+def escribir(xpath: str, texto: str):
+    elem = driver.find_element(By.XPATH, xpath)
+    elem.clear()
+    elem.send_keys(texto)
+    log(f"Texto '{texto}' introducido en {xpath}")
+    return {"status": "ok"}
+    
 
 @app.get("/xpaths_buttons")
 def get_xpaths_buttons_full():
