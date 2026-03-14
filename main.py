@@ -177,38 +177,19 @@ def get_xpaths_inputs_full():
 def get_xpaths_checkboxes():
     try:
         WebDriverWait(driver, 30).until(
-            EC.presence_of_all_elements_located(
+            EC.presence_of_element_located(
                 (By.XPATH, "//input[@type='checkbox']")
             )
         )
     except Exception as e:
-        return {"error": f"No se encontraron checkboxes: {e}"}
+        return {"error": f"No se encontró ningún checkbox: {e}"}
 
-    elementos = []
-    for el in driver.find_elements(By.XPATH, "//input[@type='checkbox']"):
-        if el.is_displayed():
-            xp = build_xpath(el)
-
-            # Buscar texto en el hermano siguiente (span)
-            desc = ""
-            try:
-                sibling = el.find_element(By.XPATH, "following-sibling::*")
-                desc = sibling.text.strip()
-            except:
-                pass
-
-            if not desc:
-                desc = el.get_attribute("name") or el.get_attribute("id") or \
-                       el.get_attribute("value") or el.get_attribute("aria-label") or \
-                       el.get_attribute("title") or ""
-
-            elementos.append({
-                "xpath": xp,
-                "descripcion": desc,
-                "tipo": "checkbox"
-            })
-
-    return {"checkboxes": elementos}
+    try:
+        el = driver.find_element(By.XPATH, "//input[@type='checkbox']")
+        xp = build_xpath(el)
+        return {"xpath": xp}
+    except Exception as e:
+        return {"error": f"No se pudo obtener el xpath del checkbox: {e}"}
     
 
 @app.get("/xpaths_buttons")
