@@ -229,7 +229,7 @@ def clicar(xpath: str):
     return {"status": "ok"}
     
 
-@app.post("/navegar_atras")
+@app.get("/navegar_atras")
 def navegar_atras():
     try:
         driver.back()
@@ -305,6 +305,23 @@ def escribir(xpath: str, texto: str):
     elem.send_keys(texto)
     log(f"Texto '{texto}' introducido en {xpath}")
     return {"status": "ok"}
+    
+@app.post("/clicar_checkbox")
+def clicar_checkbox(xpath: str):
+    try:
+        element = driver.find_element(By.XPATH, xpath)
+        # Intento normal
+        element.click()
+        return {"status": "ok", "method": "selenium", "xpath": xpath}
+    except (ElementClickInterceptedException, ElementNotInteractableException):
+        try:
+            # Si falla, forzamos con JS
+            driver.execute_script("arguments[0].click();", element)
+            return {"status": "ok", "method": "javascript", "xpath": xpath}
+        except Exception as e:
+            return {"status": "error", "xpath": xpath, "detail": str(e)}
+    except Exception as e:
+        return {"status": "error", "xpath": xpath, "detail": str(e)}    
   
 
 # ------------------- KEEP ALIVE -------------------
