@@ -172,6 +172,43 @@ def get_xpaths_inputs_full():
         )
     except Exception as e:
         return {"error": f"No se encontraron inputs ni checkboxes: {e}"}
+        
+@app.get("/checkboxes")
+def get_xpaths_checkboxes():
+    try:
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_all_elements_located(
+                (By.XPATH, "//input[@type='checkbox']")
+            )
+        )
+    except Exception as e:
+        return {"error": f"No se encontraron checkboxes: {e}"}
+
+    elementos = []
+    for el in driver.find_elements(By.XPATH, "//input[@type='checkbox']"):
+        if el.is_displayed():
+            xp = build_xpath(el)
+
+            # descripción: primero label asociado, si no existe usar atributos
+            desc = ""
+            try:
+                label = el.find_element(By.XPATH, "following-sibling::label")
+                desc = label.text.strip()
+            except:
+                pass
+
+            if not desc:
+                desc = el.get_attribute("name") or el.get_attribute("id") or \
+                       el.get_attribute("value") or el.get_attribute("aria-label") or \
+                       el.get_attribute("title") or ""
+
+            elementos.append({
+                "xpath": xp,
+                "descripcion": desc,
+                "tipo": "checkbox"
+            })
+
+    return {"checkboxes": elementos}        
 
     elementos = []
     for el in driver.find_elements(
