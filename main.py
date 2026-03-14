@@ -69,41 +69,7 @@ def build_xpath(el):
 
 
 
-@app.post("/buscar_xpath")
-def buscar_xpath_por_descripcion(descripcion: str = Body(..., embed=True)):
-    try:
-        # Recolectamos elementos relevantes: divs, links, inputs, botones
-        elementos = driver.find_elements(By.XPATH, "//div | //a | //input | //textarea | //button | //*[@role='button']")
-        resultados = []
 
-        for el in elementos:
-            if not el.is_displayed():
-                continue
-
-            xp = build_xpath(el)
-            if not xp:
-                continue
-
-            # Construimos una descripción similar a la de tus otros endpoints
-            desc = el.text.strip() or el.get_attribute("placeholder") or el.get_attribute("value") or \
-                   el.get_attribute("name") or el.get_attribute("id") or el.get_attribute("href") or ""
-
-            # Comparamos con la descripción recibida (case-insensitive, substring)
-            if descripcion.lower() in desc.lower():
-                resultados.append({
-                    "xpath": xp,
-                    "descripcion": desc,
-                    "tipo": el.tag_name.lower()
-                })
-
-        if resultados:
-            log(f"Encontrados {len(resultados)} elementos con descripción '{descripcion}'")
-            return {"resultados": resultados}
-        else:
-            return {"resultados": [], "mensaje": f"No se encontraron elementos con descripción '{descripcion}'"}
-
-    except Exception as e:
-        return {"error": f"Error al buscar descripción '{descripcion}': {e}"}
 @app.post("/navegar")
 def navegar(url: str):
     driver.get(url)
@@ -176,6 +142,26 @@ def get_xpaths_inputs_full():
         )
     except Exception as e:
         return {"error": f"No se encontraron inputs ni checkboxes: {e}"}
+
+    elementos = []
+    for el in driver.find_elements(
+        By.XPATH,
+        "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | "
+        "//input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | "
+        "//textarea | //input[@type='checkbox']"
+    ):
+        if el.is_displayed():
+            xp = build_xpath(el)
+            if xp:
+                desc = el.get_attribute("placeholder") or el.get_attribute("name") or \
+                       el.get_attribute("id") or el.get_attribute("value") or ""
+                elementos.append({
+                    "xpath": xp,
+                    "descripcion": desc,
+                    "tipo": el.tag_name.lower()
+                })
+
+    return {"inputs": elementos}
         
 @app.get("/checkboxes")
 def get_xpaths_checkboxes():
@@ -242,21 +228,6 @@ def clicar(xpath: str):
     log(f"Clic en {xpath}")
     return {"status": "ok"}
     
-@app.get("/clicar_1")
-def clicar():
-    xpath = "/html/body/div[1]/button[1]"  # <-- XPath fijo
-    try:
-        elem = driver.find_element(By.XPATH, xpath)
-        try:
-            elem.click()
-        except:
-            driver.execute_script("arguments[0].click();", elem)
-
-        log(f"Clic en {xpath}")
-        return {"status": "ok"}
-    except Exception as e:
-        log(f"Error al clicar {xpath}: {e}")
-        return {"status": "error"}    
 
 @app.post("/navegar_atras")
 def navegar_atras():
@@ -267,30 +238,6 @@ def navegar_atras():
     except Exception as e:
         return {"error": f"No se pudo navegar atrás: {e}"}
         
-@app.get("/escribir_input")
-def escribir_unico_input():
-    try:
-        # Espera hasta que haya al menos un input o textarea visible
-        WebDriverWait(driver, 30).until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | //input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | //textarea")
-            )
-        )
-    except Exception as e:
-        return {"error": f"No se encontró ningún input: {e}"}
-
-    try:
-        # Obtiene el primer input/textarea visible
-        el = driver.find_element(By.XPATH, "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | //input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | //textarea")
-        if el.is_displayed():
-            el.clear()  # Limpia el campo antes de escribir
-            el.send_keys("@RichDogGameBot")
-            return {"resultado": "Texto '@RichDogGameBot' escrito en el único input"}
-        else:
-            return {"error": "El input encontrado no está visible"}
-    except Exception as e:
-        return {"error": f"No se pudo escribir en el input: {e}"}
-
 @app.get("/exportar_cookies")
 def exportar_cookies():
     cookies = driver.get_cookies()
@@ -351,55 +298,15 @@ def mostrar_cookies():
     log(f"Cookies actuales: {cookies}")
     return data
 
-@app.get("/clicar_chat")
-def clicar_chat():
-    xpath = "/html[1]/body[1]/div[2]/div[1]/div[3]/div[1]/div[1]/div[3]/div[2]/div[2]/div[2]/div[1]/div[1]/div[1]/div[1]/ul[1]/a[1]"  # <-- XPath fijo
-    try:
-        elem = driver.find_element(By.XPATH, xpath)
-        try:
-            elem.click()
-        except:
-            driver.execute_script("arguments[0].click();", elem)
+@app.post("/escribir_input")
+def escribir(xpath: str, texto: str):
+    elem = driver.find_element(By.XPATH, xpath)
+    elem.clear()
+    elem.send_keys(texto)
+    log(f"Texto '{texto}' introducido en {xpath}")
+    return {"status": "ok"}
+  
 
-        log(f"Clic en {xpath}")
-        return {"status": "ok"}
-    except Exception as e:
-        log(f"Error al clicar {xpath}: {e}")
-        return {"status": "error"}
-        
-        
-@app.get("/clicar_abrir")        
-def clicar_abrir():
-    xpath = "/html[1]/body[1]/div[2]/div[1]/div[4]/div[1]/div[1]/div[3]/div[2]/div[2]/section[9]/div[4]/div[1]/div[1]/div[2]/div[1]/a[1]"  # <-- XPath fijo
-    try:
-        elem = driver.find_element(By.XPATH, xpath)
-        try:
-            elem.click()
-        except:
-            driver.execute_script("arguments[0].click();", elem)
-
-        log(f"Clic en {xpath}")
-        return {"status": "ok"}
-    except Exception as e:
-        log(f"Error al clicar {xpath}: {e}")
-        return {"status": "error"}
-        
-@app.get("/clicar_confirmar")         
-def clicar_confirmar():
-    xpath = "/html[1]/body[1]/div[8]/div[1]/div[2]/button[1]"  # <-- XPath fijo
-    try:
-        elem = driver.find_element(By.XPATH, xpath)
-        try:
-            elem.click()
-        except:
-            driver.execute_script("arguments[0].click();", elem)
-
-        log(f"Clic en {xpath}")
-        return {"status": "ok"}
-    except Exception as e:
-        log(f"Error al clicar {xpath}: {e}")
-        return {"status": "error"}                        
-        
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
