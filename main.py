@@ -174,6 +174,7 @@ def get_xpaths_inputs_full():
         return {"error": f"No se encontraron inputs ni checkboxes: {e}"}
         
 @app.get("/checkboxes")
+@app.get("/xpaths_checkboxes")
 def get_xpaths_checkboxes():
     try:
         WebDriverWait(driver, 30).until(
@@ -189,12 +190,11 @@ def get_xpaths_checkboxes():
         if el.is_displayed():
             xp = build_xpath(el)
 
-            # descripción: primero label asociado, si no existe usar atributos
+            # Buscar texto en el hermano siguiente (span)
             desc = ""
             try:
-                # Buscar texto cercano (hermano siguiente)
-                label_text = el.find_element(By.XPATH, "following-sibling::*").text
-                desc = label_text.strip()
+                sibling = el.find_element(By.XPATH, "following-sibling::*")
+                desc = sibling.text.strip()
             except:
                 pass
 
