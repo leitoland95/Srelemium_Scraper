@@ -23,7 +23,7 @@ chrome_options.add_argument("--headless=new")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36"
-chrome options.add_argument(f"user-agent={user_agent}")
+chrome_options.add_argument(f"user-agent={user_agent}")
 
 
 driver = webdriver.Chrome(options=chrome_options)
