@@ -323,9 +323,8 @@ def clicar_checkbox(xpath: str):
     except Exception as e:
         return {"status": "error", "xpath": xpath, "detail": str(e)}    
   
-@app.post("/xpaths_labels")
-def obtener_labels(url: str = Body(..., embed=True)):
-    driver.get(url)
+@app.get("/xpaths_labels")
+def obtener_labels():
     labels = driver.find_elements(By.TAG_NAME, "label")
     resultados = []
 
