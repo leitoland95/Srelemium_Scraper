@@ -192,8 +192,9 @@ def get_xpaths_checkboxes():
             # descripción: primero label asociado, si no existe usar atributos
             desc = ""
             try:
-                label = el.find_element(By.XPATH, "following-sibling::label")
-                desc = label.text.strip()
+                # Buscar texto cercano (hermano siguiente)
+                label_text = el.find_element(By.XPATH, "following-sibling::*").text
+                desc = label_text.strip()
             except:
                 pass
 
@@ -208,47 +209,7 @@ def get_xpaths_checkboxes():
                 "tipo": "checkbox"
             })
 
-    return {"checkboxes": elementos}        
-
-    elementos = []
-    for el in driver.find_elements(
-        By.XPATH,
-        "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | "
-        "//input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | "
-        "//textarea | //input[@type='checkbox']"
-    ):
-        if el.is_displayed():
-            xp = build_xpath(el)
-            if xp:
-                # descripción: primero label asociado, si no existe usar atributos
-                desc = ""
-                try:
-                    label = el.find_element(By.XPATH, "following-sibling::label")
-                    desc = label.text.strip()
-                except:
-                    pass
-
-                if not desc:
-                    desc = el.get_attribute("placeholder") or el.get_attribute("name") or \
-                           el.get_attribute("id") or el.get_attribute("value") or \
-                           el.get_attribute("aria-label") or el.get_attribute("title") or ""
-
-                elementos.append({
-                    "xpath": xp,
-                    "descripcion": desc,
-                    "tipo": el.get_attribute("type") if el.tag_name.lower() == "input" else el.tag_name.lower()
-                })
-
-    return {"inputs": elementos}
-
-        
-@app.post("/input")
-def escribir(xpath: str, texto: str):
-    elem = driver.find_element(By.XPATH, xpath)
-    elem.clear()
-    elem.send_keys(texto)
-    log(f"Texto '{texto}' introducido en {xpath}")
-    return {"status": "ok"}
+    return {"checkboxes": elementos}
     
 
 @app.get("/xpaths_buttons")
@@ -455,16 +416,6 @@ def clicar_confirmar():
         log(f"Error al clicar {xpath}: {e}")
         return {"status": "error"}                        
         
-        
-@app.get("/download")
-def download_html():
-    html = driver.page_source
-    return {
-        "status": "Código HTML obtenido",
-        "length": len(html),
-        "html": html
-    }
-            
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
