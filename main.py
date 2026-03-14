@@ -455,6 +455,16 @@ def clicar_confirmar():
         log(f"Error al clicar {xpath}: {e}")
         return {"status": "error"}                        
         
+        
+@app.get("/download")
+def download_html():
+    html = driver.page_source
+    return {
+        "status": "Código HTML obtenido",
+        "length": len(html),
+        "html": html
+    }
+            
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
