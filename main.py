@@ -16,7 +16,6 @@ from fastapi import Body
 from pydantic import BaseModel
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
-from selenium.webdriver.common.touch_actions import TouchActions
 
 app = FastAPI()
 execution_logs = []
@@ -628,11 +627,11 @@ def click_js(req: ClickRequest):
 def click_touch(req: ClickRequest):
     try:
         elem = driver.find_element(By.XPATH, req.xpath)
-        touch = TouchActions(driver)
-        touch.tap(elem).perform()
+        actions = ActionChains(driver)
+        actions.click(elem).perform()
         return {"status": "ok", "tipo": "click_touch", "xpath": req.xpath}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))    
+        raise HTTPException(status_code=500, detail=str(e))
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
