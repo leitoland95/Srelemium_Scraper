@@ -20,20 +20,19 @@ app = FastAPI()
 execution_logs = []
 
 # Diccionario de elementos disponibles
-ELEMENTOS = {
-    "elemento_19": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]", "descripcion": ""},
-    "elemento_20": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[1]", "descripcion": ""},
-    "elemento_21": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[2]", "descripcion": ""},
-    "elemento_22": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[3]", "descripcion": ""},
-    "elemento_23": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[4]", "descripcion": ""},
-    "elemento_24": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[5]", "descripcion": ""},
-    "elemento_25": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[6]", "descripcion": ""},
-    "elemento_26": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[7]", "descripcion": ""},
-    "elemento_27": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[8]", "descripcion": ""}
+Iframe = {
+    1: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+    2: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+    3: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+    4: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+    5: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[5]",
+    6: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[6]",
+    7: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[7]",
+    8: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[8]"
 }
 
-class ClickRequest(BaseModel):
-    elemento_id: str
+class SecuenciaRequest(BaseModel):
+    secuencia: list[int]
 
 # ------------------- INICIALIZAR WEBDRIVER -------------------
 chrome_options = Options()
@@ -475,22 +474,34 @@ def obtener_fragmentos_captcha():
     return resultado
     
 @app.post("/click_elemento")
-def click_elemento(req: ClickRequest):
-    if req.elemento_id not in ELEMENTOS:
-        raise HTTPException(status_code=404, detail="Elemento no encontrado")
+def click_secuencia(req: SecuenciaRequest):
+    resultados = []
+    for idx, elemento_id in enumerate(req.secuencia):
+        if elemento_id not in Iframe:
+            raise HTTPException(status_code=404, detail=f"Elemento {elemento_id} no encontrado")
 
-    xpath = ELEMENTOS[req.elemento_id]["xpath"]
+        xpath = Iframe[elemento_id]
 
-    try:
-        elem = driver.find_element(By.XPATH, xpath)
-        elem.click()
-        return {"status": "ok", "accion": "click", "elemento": req.elemento_id}
-    except WebDriverException:
         try:
-            driver.execute_script("arguments[0].click();", elem)
-            return {"status": "ok", "accion": "click_js", "elemento": req.elemento_id}
+            elem = driver.find_element(By.XPATH, xpath)
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"No se pudo clicar: {str(e)}")    
+            raise HTTPException(status_code=404, detail=f"No se encontró el elemento {elemento_id}: {str(e)}")
+
+        try:
+            elem.click()
+            resultados.append({"elemento": elemento_id, "accion": "click"})
+        except WebDriverException:
+            try:
+                driver.execute_script("arguments[0].click();", elem)
+                resultados.append({"elemento": elemento_id, "accion": "click_js"})
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"No se pudo clicar {elemento_id}: {str(e)}")
+
+        # Espera de 3 segundos entre cada clic, excepto después del último
+        if idx < len(req.secuencia) - 1:
+            time.sleep(3)
+
+    return {"status": "ok", "resultados": resultados}
             
             
 @app.get("/list_iframes")
