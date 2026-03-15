@@ -33,6 +33,9 @@ Iframe = {
 
 class SecuenciaRequest(BaseModel):
     secuencia: list[int]
+    
+class ClickRequest(BaseModel):
+    xpath: str    
 
 # ------------------- INICIALIZAR WEBDRIVER -------------------
 chrome_options = Options()
@@ -600,10 +603,34 @@ def switch_default():
     driver.switch_to.default_content()
     return {"status": "success", "message": "Regresado al contexto principal"}
     
-    
+@app.post("/click_actionchains")
+def click_actionchains(req: ClickRequest):
+    try:
+        elem = driver.find_element(By.XPATH, req.xpath)
+        actions = ActionChains(driver)
+        actions.move_to_element(elem).click().perform()
+        return {"status": "ok", "tipo": "click_actionchains", "xpath": req.xpath}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))   
 
+@app.post("/click_js")
+def click_js(req: ClickRequest):
+    try:
+        elem = driver.find_element(By.XPATH, req.xpath)
+        driver.execute_script("arguments[0].click();", elem)
+        return {"status": "ok", "tipo": "click_js", "xpath": req.xpath}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    
+@app.post("/click_touch")
+def click_touch(req: ClickRequest):
+    try:
+        elem = driver.find_element(By.XPATH, req.xpath)
+        touch = TouchActions(driver)
+        touch.tap(elem).perform()
+        return {"status": "ok", "tipo": "click_touch", "xpath": req.xpath}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))    
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
