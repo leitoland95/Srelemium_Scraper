@@ -15,6 +15,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from fastapi import Body
 from pydantic import BaseModel
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.touch_actions import TouchActions
 
 app = FastAPI()
 execution_logs = []
