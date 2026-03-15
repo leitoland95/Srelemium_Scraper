@@ -16,6 +16,8 @@ from fastapi import Body
 from pydantic import BaseModel
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
+from google import genai
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 execution_logs = []
@@ -698,7 +700,37 @@ def scrape_iframe_click(req: ClickRequest):
 
     return {"iframe_elements": result}        
         
-        
+@app.post("/analyze")
+async def analyze(
+    prompt: str = Form(None),
+    image: UploadFile = None
+):
+    contents = []
+
+    # Si hay prompt
+    if prompt:
+        contents.append({"role": "user", "parts": [{"text": prompt}]})
+
+    # Si hay imagen
+    if image:
+        data = await image.read()
+        contents.append({
+            "role": "user",
+            "parts": [
+                {"inline_data": {
+                    "mime_type": image.content_type,
+                    "data": data
+                }}
+            ]
+        })
+
+    # Llamada al modelo
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=contents
+    )
+
+    return JSONResponse({"reply": response.text})        
         
         
 # ------------------- KEEP ALIVE -------------------
