@@ -406,6 +406,56 @@ def download_html():
         "length": len(html),
         "html": html
     }
+    
+@app.get("/scrap_iframe")    
+def obtener_fragmentos_captcha():
+    # Cambiar al iframe del captcha
+    iframe = driver.find_element(By.ID, "_2cFrame2")
+    driver.switch_to.frame(iframe)
+
+    # Capturar todos los nodos dentro del iframe
+    fragmentos = driver.find_elements(By.XPATH, "//*")
+
+    # Diccionario para almacenar resultados
+    resultado = {}
+
+    # Función auxiliar para obtener XPath absoluto
+    def get_xpath(el):
+        return driver.execute_script("""
+            function absoluteXPath(element) {
+                var comp = [];
+                while (element !== document.body) {
+                    var index = 1;
+                    var siblings = element.parentNode.childNodes;
+                    for (var i = 0; i < siblings.length; i++) {
+                        var sibling = siblings[i];
+                        if (sibling === element) break;
+                        if (sibling.nodeName === element.nodeName) index++;
+                    }
+                    comp.unshift(element.nodeName + '[' + index + ']');
+                    element = element.parentNode;
+                }
+                return '/' + comp.join('/');
+            }
+            return absoluteXPath(arguments[0]);
+        """, el)
+
+    # Recorrer elementos y guardar en el diccionario
+    for idx, el in enumerate(fragmentos, start=1):
+        try:
+            resultado[f"elemento_{idx}"] = {
+                "tag": el.tag_name,
+                "xpath": get_xpath(el),
+                "descripcion": el.text.strip()
+            }
+        except Exception:
+            continue
+
+    # Volver al contexto principal
+    driver.switch_to.default_content()
+
+    return resultado
+    
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
