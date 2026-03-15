@@ -277,7 +277,7 @@ def cargar_cookies():
     with open(path, "r") as f:
         data = json.load(f)
 
-    driver.get("https://web.telegram.org")
+    driver.get("https://2captcha.com")
     driver.delete_all_cookies()
     for c in data.get("cookies", []):
         try:
