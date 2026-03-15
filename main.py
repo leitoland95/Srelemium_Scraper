@@ -5,7 +5,7 @@ import requests
 import base64
 import json
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -13,6 +13,8 @@ import uvicorn
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from fastapi import Body
+from pydantic import BaseModel
+from selenium.common.exceptions import WebDriverException
 
 app = FastAPI()
 execution_logs = []
