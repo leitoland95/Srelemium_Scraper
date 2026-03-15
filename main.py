@@ -240,11 +240,13 @@ def refrescar():
 
 @app.post("/clicar")
 def clicar(xpath: str):
-    elem = driver.find_element(By.XPATH, xpath)
-    elem.click()
-    log(f"Clic en {xpath}")
-    return {"status": "ok"}
-    
+	try:
+        elem = driver.find_element(By.XPATH, xpath)
+        elem.click()
+        log(f"Clic en {xpath}")
+        return {"status": "ok"}
+    except Exception as e:
+        return {"error": f"No se pudo clicar: {e}"}    
 
 @app.get("/navegar_atras")
 def navegar_atras():
