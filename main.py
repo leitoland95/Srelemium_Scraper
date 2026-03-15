@@ -49,6 +49,30 @@ chrome_options.add_argument(f"user-agent={user_agent}")
 
 driver = webdriver.Chrome(options=chrome_options)
 
+
+def get_xpath(driver, element):
+    return driver.execute_script(
+        "function absoluteXPath(element) {"
+        "var comp, comps = [];"
+        "var xpath = '';"
+        "var getPos = function(element) {"
+        "var position = 1, curNode;"
+        "for (curNode = element.previousSibling; curNode; curNode = curNode.previousSibling) {"
+        "if (curNode.nodeName == element.nodeName) {++position;}}"
+        "return position;};"
+        "for (; element && !(element instanceof Document); element = element.parentNode) {"
+        "comp = comps[comps.length] = {};"
+        "comp.name = element.nodeName;"
+        "comp.position = getPos(element);}"
+        "for (var i = comps.length - 1; i >= 0; i--) {"
+        "comp = comps[i];"
+        "xpath += '/' + comp.name.toLowerCase();"
+        "if (comp.position != null) {xpath += '[' + comp.position + ']';}}"
+        "return xpath;}"
+        "return absoluteXPath(arguments[0]);", element)
+
+
+
 def log(msg: str):
     execution_logs.append(msg)
     print(msg)
@@ -632,6 +656,51 @@ def click_touch(req: ClickRequest):
         return {"status": "ok", "tipo": "click_touch", "xpath": req.xpath}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+        
+        
+@app.post("/scrape_iframe_click")
+def scrape_iframe_click(req: ClickRequest):
+    # 1. Esperar a que el elemento esté listo para clic
+    element = WebDriverWait(driver, 15).until(
+        EC.element_to_be_clickable((By.XPATH, req.xpath))
+    )
+
+    # 2. Ejecutar el click
+    element.click()
+
+    # 3. Esperar a que aparezca el iframe
+    iframe = WebDriverWait(driver, 15).until(
+        EC.presence_of_element_located((By.TAG_NAME, "iframe"))
+    )
+
+    # 4. Cambiar contexto al iframe
+    driver.switch_to.frame(iframe)
+
+    # 5. Capturar todos los elementos dentro del iframe
+    elements = driver.find_elements(By.XPATH, "//*")
+
+    result = []
+    for el in elements:
+        try:
+            xpath = get_xpath(driver, el)
+            text = el.text.strip()
+            tag = el.tag_name
+            result.append({
+                "tag": tag,
+                "xpath": xpath,
+                "descripcion": text
+            })
+        except Exception:
+            continue
+
+    # 6. Volver al documento principal
+    driver.switch_to.default_content()
+
+    return {"iframe_elements": result}        
+        
+        
+        
+        
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
