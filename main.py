@@ -240,7 +240,7 @@ def refrescar():
 
 @app.post("/clicar")
 def clicar(xpath: str):
-	try:
+    try:
         elem = driver.find_element(By.XPATH, xpath)
         elem.click()
         log(f"Clic en {xpath}")
