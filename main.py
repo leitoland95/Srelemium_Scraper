@@ -51,7 +51,7 @@ chrome_options.add_argument(f"user-agent={user_agent}")
 
 driver = webdriver.Chrome(options=chrome_options)
 
-client = genai.Client(api_key="AIzaSyCuGYiTY2Kz3rJKwNjn9KvQEl8H6XS-JIg")
+client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 def get_xpath(driver, element):
     return driver.execute_script(
