@@ -4,3 +4,4 @@ selenium
 requests
 pydantic
 google-genai
+python-multipart
