@@ -17,6 +17,22 @@ from fastapi import Body
 app = FastAPI()
 execution_logs = []
 
+# Diccionario de elementos disponibles
+ELEMENTOS = {
+    "elemento_19": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]", "descripcion": ""},
+    "elemento_20": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[1]", "descripcion": ""},
+    "elemento_21": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[2]", "descripcion": ""},
+    "elemento_22": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[3]", "descripcion": ""},
+    "elemento_23": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[4]", "descripcion": ""},
+    "elemento_24": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[5]", "descripcion": ""},
+    "elemento_25": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[6]", "descripcion": ""},
+    "elemento_26": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[7]", "descripcion": ""},
+    "elemento_27": {"tag": "div", "xpath": "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[8]", "descripcion": ""}
+}
+
+class ClickRequest(BaseModel):
+    elemento_id: str
+
 # ------------------- INICIALIZAR WEBDRIVER -------------------
 chrome_options = Options()
 chrome_options.add_argument("--headless=new")
@@ -455,6 +471,123 @@ def obtener_fragmentos_captcha():
     driver.switch_to.default_content()
 
     return resultado
+    
+@app.post("/click_elemento")
+def click_elemento(req: ClickRequest):
+    if req.elemento_id not in ELEMENTOS:
+        raise HTTPException(status_code=404, detail="Elemento no encontrado")
+
+    xpath = ELEMENTOS[req.elemento_id]["xpath"]
+
+    try:
+        elem = driver.find_element(By.XPATH, xpath)
+        elem.click()
+        return {"status": "ok", "accion": "click", "elemento": req.elemento_id}
+    except WebDriverException:
+        try:
+            driver.execute_script("arguments[0].click();", elem)
+            return {"status": "ok", "accion": "click_js", "elemento": req.elemento_id}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"No se pudo clicar: {str(e)}")    
+            
+            
+@app.get("/list_iframes")
+def list_iframes():
+    iframes = driver.find_elements(By.TAG_NAME, "iframe")
+    result = []
+    for idx, iframe in enumerate(iframes):
+        try:
+            src = iframe.get_attribute("src")
+            name = iframe.get_attribute("name")
+            # XPath absoluto usando JavaScript
+            xpath = driver.execute_script("""
+                function absoluteXPath(element) {
+                    var comp, comps = [];
+                    var parent = null;
+                    var xpath = '';
+                    var getPos = function(element) {
+                        var position = 1, curNode;
+                        if (element.nodeType == Node.ATTRIBUTE_NODE) {
+                            return null;
+                        }
+                        for (curNode = element.previousSibling; curNode; curNode = curNode.previousSibling) {
+                            if (curNode.nodeName == element.nodeName) {
+                                ++position;
+                            }
+                        }
+                        return position;
+                    }
+                    if (element instanceof Document) {
+                        return '/';
+                    }
+                    for (; element && !(element instanceof Document); element = element.nodeType == Node.ATTRIBUTE_NODE ? element.ownerElement : element.parentNode) {
+                        comp = comps[comps.length] = {};
+                        switch (element.nodeType) {
+                            case Node.TEXT_NODE:
+                                comp.name = 'text()';
+                                break;
+                            case Node.ATTRIBUTE_NODE:
+                                comp.name = '@' + element.nodeName;
+                                break;
+                            case Node.PROCESSING_INSTRUCTION_NODE:
+                                comp.name = 'processing-instruction()';
+                                break;
+                            case Node.COMMENT_NODE:
+                                comp.name = 'comment()';
+                                break;
+                            case Node.ELEMENT_NODE:
+                                comp.name = element.nodeName;
+                                break;
+                        }
+                        comp.position = getPos(element);
+                    }
+                    for (var i = comps.length - 1; i >= 0; i--) {
+                        comp = comps[i];
+                        xpath += '/' + comp.name.toLowerCase();
+                        if (comp.position != null) {
+                            xpath += '[' + comp.position + ']';
+                        }
+                    }
+                    return xpath;
+                }
+                return absoluteXPath(arguments[0]);
+            """, iframe)
+
+            result.append({
+                "index": idx,
+                "src": src,
+                "name": name,
+                "xpath": xpath
+            })
+        except Exception as e:
+            result.append({"index": idx, "error": str(e)})
+
+    return {"status": "success", "iframes": result}            
+
+@app.post("/switch_iframe")
+def switch_iframe(xpath: str = None, index: int = None):
+    try:
+        if xpath:
+            iframe = driver.find_element(By.XPATH, xpath)
+            driver.switch_to.frame(iframe)
+            return {"status": "success", "message": f"Cambiado al iframe con XPath: {xpath}"}
+        elif index is not None:
+            driver.switch_to.frame(index)
+            return {"status": "success", "message": f"Cambiado al iframe con índice: {index}"}
+        else:
+            return {"status": "error", "message": "Debes enviar un XPath o un índice"}
+    except (NoSuchElementException, NoSuchFrameException) as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/switch_default")
+def switch_default():
+    """Regresa al contexto principal (fuera de cualquier iframe)."""
+    driver.switch_to.default_content()
+    return {"status": "success", "message": "Regresado al contexto principal"}
+    
+    
+
+
     
 # ------------------- KEEP ALIVE -------------------
 
