@@ -18,6 +18,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
 from google import genai
 from fastapi.responses import JSONResponse
+from openai import OpenAI
 
 app = FastAPI()
 execution_logs = []
@@ -39,6 +40,10 @@ class SecuenciaRequest(BaseModel):
     
 class ClickRequest(BaseModel):
     xpath: str    
+    
+class PromptRequest(BaseModel):
+    prompt: str    
+    
 
 # ------------------- INICIALIZAR WEBDRIVER -------------------
 chrome_options = Options()
@@ -47,6 +52,9 @@ chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36"
 chrome_options.add_argument(f"user-agent={user_agent}")
+
+api_key = os.getenv("OPENAI_API_KEY")
+client_ia = OpenAI(api_key=api_key)
 
 
 driver = webdriver.Chrome(options=chrome_options)
@@ -701,37 +709,13 @@ def scrape_iframe_click(req: ClickRequest):
 
     return {"iframe_elements": result}        
         
-@app.post("/analyze")
-async def analyze(
-    prompt: str = Form(None),
-    image: UploadFile = None
-):
-    contents = []
-
-    # Si hay prompt
-    if prompt:
-        contents.append({"role": "user", "parts": [{"text": prompt}]})
-
-    # Si hay imagen
-    if image:
-        data = await image.read()
-        contents.append({
-            "role": "user",
-            "parts": [
-                {"inline_data": {
-                    "mime_type": image.content_type,
-                    "data": data
-                }}
-            ]
-        })
-
-    # Llamada al modelo
-    response = client.models.generate_content(
-            model="gemini-2.5-flash-native-audio-dialog",
-            contents=contents
+@app.post("/chat")
+def chat_endpoint(request: PromptRequest):
+    response = client_ia.responses.create(
+        model="gpt-5.4",
+        input=request.prompt
     )
-
-    return JSONResponse({"reply": response.text})        
+    return {"reply": response.output_text}
 
 @app.get("/models")
 async def list_models():
