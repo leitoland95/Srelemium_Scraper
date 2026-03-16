@@ -727,8 +727,8 @@ async def analyze(
 
     # Llamada al modelo
     response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=contents
+            model="gemini-2.5-flash-native-audio-dialog",
+            contents=contents
     )
 
     return JSONResponse({"reply": response.text})        
