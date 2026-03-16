@@ -712,7 +712,7 @@ def scrape_iframe_click(req: ClickRequest):
 @app.post("/chat")
 def chat_endpoint(request: PromptRequest):
     response = client_ia.responses.create(
-        model="gpt-5.4",
+        model="gpt-4.1",
         input=request.prompt
     )
     return {"reply": response.output_text}
