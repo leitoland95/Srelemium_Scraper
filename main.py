@@ -732,7 +732,19 @@ async def analyze(
     )
 
     return JSONResponse({"reply": response.text})        
-        
+
+@app.get("/models")
+async def list_models():
+    try:
+        modelos = []
+        for m in client.models.list():
+            modelos.append({
+                "name": m.name,
+                "methods": m.supported_methods
+            })
+        return JSONResponse({"models": modelos})
+    except Exception as e:
+        return JSONResponse({"error": str(e)})        
         
 # ------------------- KEEP ALIVE -------------------
 
