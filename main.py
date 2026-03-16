@@ -54,8 +54,10 @@ user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like
 chrome_options.add_argument(f"user-agent={user_agent}")
 
 api_key = os.getenv("OPENAI_API_KEY")
-client_ia = OpenAI(api_key=api_key)
-
+client.ia = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY"),
+    base_url="https://api.groq.com/openai/v1",
+)
 
 driver = webdriver.Chrome(options=chrome_options)
 
@@ -712,7 +714,7 @@ def scrape_iframe_click(req: ClickRequest):
 @app.post("/chat")
 def chat_endpoint(request: PromptRequest):
     response = client_ia.responses.create(
-        model="gpt-4.1",
+        model="openai/gpt-oss-20b",
         input=request.prompt
     )
     return {"reply": response.output_text}
