@@ -54,7 +54,7 @@ user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like
 chrome_options.add_argument(f"user-agent={user_agent}")
 
 api_key = os.getenv("OPENAI_API_KEY")
-client.ia = OpenAI(
+client_ia = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
     base_url="https://api.groq.com/openai/v1",
 )
