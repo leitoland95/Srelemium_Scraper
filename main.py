@@ -12,12 +12,12 @@ from selenium.webdriver.common.by import By
 import uvicorn
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from fastapi import Body, Form, UploadFile
+from fastapi import Body, Form, UploadFile, File
 from pydantic import BaseModel
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
 from google import genai
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from openai import OpenAI
 
 app = FastAPI()
@@ -52,6 +52,10 @@ chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36"
 chrome_options.add_argument(f"user-agent={user_agent}")
+
+
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 api_key = os.getenv("OPENAI_API_KEY")
 client_ia = OpenAI(
@@ -732,6 +736,34 @@ async def list_models():
     except Exception as e:
         return JSONResponse({"error": str(e)})        
         
+ @app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    # Guardar el archivo en el directorio de uploads
+    file_path = os.path.join(UPLOAD_DIR, file.filename)
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+    
+    # Aquí deberías reemplazar con tu dominio real o IP pública
+    public_url = f"https://srelemium-scraper-1.onrender.com/{UPLOAD_DIR}/{file.filename}"
+    
+    return JSONResponse(content={"url": public_url})
+
+@app.get("/clean_uploads")
+async def clean_uploads():
+    # Eliminar todo el contenido dentro de la carpeta uploads
+    for filename in os.listdir(UPLOAD_DIR):
+        file_path = os.path.join(UPLOAD_DIR, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.remove(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            return PlainTextResponse(f"Error al limpiar la carpeta: {e}", status_code=500)
+
+    return PlainTextResponse("Carpeta Upload ha sido limpiada")
+
+       
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
