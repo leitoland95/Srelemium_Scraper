@@ -736,7 +736,7 @@ async def list_models():
     except Exception as e:
         return JSONResponse({"error": str(e)})        
         
- @app.post("/upload")
+@app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     # Guardar el archivo en el directorio de uploads
     file_path = os.path.join(UPLOAD_DIR, file.filename)
