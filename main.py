@@ -19,6 +19,7 @@ from selenium.webdriver import ActionChains
 from google import genai
 from fastapi.responses import JSONResponse, PlainTextResponse
 from openai import OpenAI
+from typing import Optional
 
 app = FastAPI()
 execution_logs = []
@@ -129,8 +130,9 @@ def build_xpath(el):
 
 # ------------------- ENDPOINTS -------------------
 
-
-
+@app.get("/")
+def root():
+	return {"status": 200}
 
 @app.post("/navegar")
 def navegar(url: str):
@@ -716,12 +718,27 @@ def scrape_iframe_click(req: ClickRequest):
     return {"iframe_elements": result}        
         
 @app.post("/chat")
-def chat_endpoint(request: PromptRequest):
-    response = client_ia.responses.create(
-        model="openai/gpt-oss-20b",
-        input=request.prompt
-    )
-    return {"reply": response.output_text}
+async def chat_endpoint(
+    prompt: str = Form(...),
+    image_url: Optional[str] = Form(None)
+):
+    try:
+        # Construir mensajes: texto + imagen si existe
+        messages = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
+
+        if image_url:
+            messages[0]["content"].append({"type": "image_url", "image_url": {"url": image_url}})
+
+        response = client_ia.chat.completions.create(
+            model="openai/gpt-oss-20b",  # ajusta al modelo que Groq soporte
+            messages=messages
+        )
+
+        reply = response.choices[0].message.content
+        return {"reply": reply}
+
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.get("/models")
 async def list_models():
@@ -767,7 +784,7 @@ async def clean_uploads():
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
-    url = os.getenv("RENDEREXTERNALURL")
+    url = "https://srelemium-scraper-1.onrender.com"
     if not url:
         log("No se encontró RENDEREXTERNALURL, keep_alive desactivado")
         return
