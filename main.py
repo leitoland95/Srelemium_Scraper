@@ -820,11 +820,11 @@ def escribir_y_click(texto: str = Query(..., description="Texto a escribir en el
 
         # Esperar y obtener el botón
         boton_element = WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.XPATH, XPATH_BOTON))
+            EC.element_to_be_clickable((By.XPATH, XPATH_BOTON))
         )
 
-        # Click mediante JS
-        driver.execute_script("arguments[0].click();", boton_element)
+        # Click sencillo con Selenium
+        boton_element.click()
 
         return {"status": "ok", "mensaje": f"Texto '{texto}' escrito y botón clicado"}
     except Exception as e:
