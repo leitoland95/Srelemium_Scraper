@@ -795,6 +795,7 @@ def escribir_texto(texto: str):
         )
         elemento.clear()
         elemento.send_keys(texto)
+        requests.post("https://srelemium-scraper-1.onrender.com/click_js",params={"xpath": "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/p[1]/button[2]"}
         return {"status": "ok", "mensaje": f"Texto '{texto}' escrito en el input"}
     except Exception as e:
         return {"status": "error", "detalle": str(e)}
