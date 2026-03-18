@@ -13,7 +13,7 @@ import uvicorn
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from fastapi import Body, Form, UploadFile, File
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
 from google import genai
@@ -23,6 +23,8 @@ from typing import Optional
 
 app = FastAPI()
 execution_logs = []
+
+XPATH_INPUT = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/div[1]/input[1]"
 
 # Diccionario de elementos disponibles
 Iframe = {
@@ -44,6 +46,10 @@ class ClickRequest(BaseModel):
     
 class PromptRequest(BaseModel):
     prompt: str    
+    
+class ChatRequest(BaseModel):
+    messages: list[str]
+    image_url: HttpUrl | None = None    
     
 
 # ------------------- INICIALIZAR WEBDRIVER -------------------
@@ -779,7 +785,19 @@ async def clean_uploads():
             return PlainTextResponse(f"Error al limpiar la carpeta: {e}", status_code=500)
 
     return PlainTextResponse("Carpeta Upload ha sido limpiada")
-
+    
+@app.post("/escribir_fijo")
+def escribir_texto(texto: str):
+    try:
+        # Esperar a que el input esté presente
+        elemento = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH, XPATH_INPUT))
+        )
+        elemento.clear()
+        elemento.send_keys(texto)
+        return {"status": "ok", "mensaje": f"Texto '{texto}' escrito en el input"}
+    except Exception as e:
+        return {"status": "error", "detalle": str(e)}
        
 # ------------------- KEEP ALIVE -------------------
 
