@@ -5,7 +5,7 @@ import requests
 import base64
 import json
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -25,6 +25,8 @@ app = FastAPI()
 execution_logs = []
 
 XPATH_INPUT = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/div[1]/input[1]"
+
+XPATH_BOTON = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/p[1]/button[2]"
 
 # Diccionario de elementos disponibles
 Iframe = {
@@ -797,6 +799,34 @@ def escribir_texto(texto: str):
         elemento.send_keys(texto)
         requests.post("https://srelemium-scraper-1.onrender.com/click_js",params={"xpath": "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/p[1]/button[2]"})
         return {"status": "ok", "mensaje": f"Texto '{texto}' escrito en el input"}
+    except Exception as e:
+        return {"status": "error", "detalle": str(e)}
+
+
+@app.post("/escribir_y_click")
+def escribir_y_click(texto: str = Query(..., description="Texto a escribir en el input")):
+    try:
+        # Esperar y obtener el input
+        input_element = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH, XPATH_INPUT))
+        )
+
+        # Escribir texto mediante JS y disparar eventos
+        driver.execute_script("""
+        arguments[0].value = arguments[1];
+        arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+        arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+        """, input_element, texto)
+
+        # Esperar y obtener el botón
+        boton_element = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH, XPATH_BOTON))
+        )
+
+        # Click mediante JS
+        driver.execute_script("arguments[0].click();", boton_element)
+
+        return {"status": "ok", "mensaje": f"Texto '{texto}' escrito y botón clicado"}
     except Exception as e:
         return {"status": "error", "detalle": str(e)}
        
