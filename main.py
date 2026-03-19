@@ -30,14 +30,14 @@ XPATH_BOTON = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]
 
 # Diccionario de elementos disponibles
 Iframe = {
-    1: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
-    2: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
-    3: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
-    4: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
-    5: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[5]",
-    6: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[6]",
-    7: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[7]",
-    8: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[8]"
+    1: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[1]",
+    2: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[2]",
+    3: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[3]",
+    4: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[4]",
+    5: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[5]",
+    6: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[6]",
+    7: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[7]",
+    8: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[8]"
 }
 
 class SecuenciaRequest(BaseModel):
@@ -539,7 +539,7 @@ def click_secuencia(req: SecuenciaRequest):
     log("Cambiando de iFrame")
     try:
         iframe = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/div[1]/iframe[1]"))
+            EC.presence_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]"))
         )
         driver.switch_to.frame(iframe)
     except Exception as e:
@@ -573,6 +573,16 @@ def click_secuencia(req: SecuenciaRequest):
         if i < len(req.secuencia) - 1:
             time.sleep(2)
 
+    try:
+    	log("Iniciando resolución del Captcha")
+    	button = "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/FOOTER[1]/BUTTON[1]"
+        elem = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, button))
+            )
+        driver.execute_script("arguments[0].click();", elem)
+    except Exception as e:
+    	return {"error al clicar confirm: ": e}
+    
     driver.switch_to.default_content()
     return {"status": "ok", "resultados": resultados}
             
