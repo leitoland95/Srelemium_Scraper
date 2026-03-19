@@ -532,7 +532,7 @@ def obtener_fragmentos_captcha(xpath: str):
     
 @app.post("/click_elemento")
 def click_secuencia(req: SecuenciaRequest):
-	iframe = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]")
+    iframe = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]")
     driver.switch_to.frame(iframe)
     resultados = []
     for idx, elemento_id in enumerate(req.secuencia):
