@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 import uvicorn
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from fastapi import Body, Form, UploadFile, File
+from fastapi import Body, Form, UploadFile, File, Request
 from pydantic import BaseModel, HttpUrl
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
@@ -30,14 +30,14 @@ XPATH_BOTON = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]
 
 # Diccionario de elementos disponibles
 Iframe = {
-    1: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[1]",
-    2: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[2]",
-    3: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[3]",
-    4: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[4]",
-    5: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[5]",
-    6: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[6]",
-    7: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[7]",
-    8: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[8]"
+    1: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+    2: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+    3: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+    4: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+    5: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[5]",
+    6: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[6]",
+    7: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[7]",
+    8: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[8]"
 }
 
 class SecuenciaRequest(BaseModel):
@@ -864,6 +864,34 @@ def iframe_click():
         return {"status": "success", "message": "Click ejecutado dentro del iframe y salida realizada"}
     except Exception as e:
         return {"status": "error", "message": str(e)}       
+        
+        
+@app.get("/click_cancelar")
+def click_js():
+    try:
+    	xpath_cancelar = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/p[1]/button[1]"
+        elem = driver.find_element(By.XPATH, xpath_cancelar)
+        driver.execute_script("arguments[0].click();", elem)
+        return {"status": "ok", "tipo": "click_js", "xpath": req.xpath}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))        
+        
+@app.post("/scroll")
+async def scroll_page(request: Request):
+    try:
+        data = await request.json()
+        direction = data.get("direction", "down")  # "up" o "down"
+        pixels = int(data.get("pixels", 500))      # cantidad de píxeles
+
+        if direction == "up":
+            driver.execute_script(f"window.scrollBy(0, -{pixels});")
+            return {"status": "success", "message": f"Scrolled up {pixels}px"}
+        else:
+            driver.execute_script(f"window.scrollBy(0, {pixels});")
+            return {"status": "success", "message": f"Scrolled down {pixels}px"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+        
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
@@ -878,6 +906,7 @@ def keep_alive():
         except Exception as e:
             log(f"Error en keep_alive: {e}")
         time.sleep(60)
+
 
 threading.Thread(target=keep_alive, daemon=True).start()
 
