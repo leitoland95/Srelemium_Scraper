@@ -532,6 +532,8 @@ def obtener_fragmentos_captcha(xpath: str):
     
 @app.post("/click_elemento")
 def click_secuencia(req: SecuenciaRequest):
+	iframe = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]")
+    driver.switch_to.frame(iframe)
     resultados = []
     for idx, elemento_id in enumerate(req.secuencia):
         if elemento_id not in Iframe:
@@ -554,10 +556,11 @@ def click_secuencia(req: SecuenciaRequest):
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"No se pudo clicar {elemento_id}: {str(e)}")
 
-        # Espera de 3 segundos entre cada clic, excepto después del último
+        # Espera de 2 segundos entre cada clic, excepto después del último
         if idx < len(req.secuencia) - 1:
-            time.sleep(3)
+            time.sleep(2)
 
+    driver.switch_to.default_content()
     return {"status": "ok", "resultados": resultados}
             
             
