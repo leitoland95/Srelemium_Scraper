@@ -539,7 +539,7 @@ def click_secuencia(req: SecuenciaRequest):
     log("Cambiando de iFrame")
     try:
         iframe = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]"))
+            EC.presence_of_element_located((By.XPATH, "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/div[1]/iframe[1]"))
         )
         driver.switch_to.frame(iframe)
     except Exception as e:
