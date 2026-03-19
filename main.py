@@ -869,7 +869,7 @@ def iframe_click():
 @app.get("/click_cancelar")
 def click_js():
     try:
-    	xpath_cancelar = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/p[1]/button[1]"
+        xpath_cancelar = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/p[1]/button[1]"
         elem = driver.find_element(By.XPATH, xpath_cancelar)
         driver.execute_script("arguments[0].click();", elem)
         return {"status": "ok", "tipo": "click_js", "xpath": req.xpath}
