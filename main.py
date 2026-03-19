@@ -484,7 +484,7 @@ def download_html():
 @app.get("/scrap_iframe")    
 def obtener_fragmentos_captcha():
     # Cambiar al iframe del captcha
-    iframe = driver.find_element(By.ID, "_2cFrame2")
+    iframe = driver.find_element(By.XPATH, "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/div[1]/iframe[1]")
     driver.switch_to.frame(iframe)
 
     # Capturar todos los nodos dentro del iframe
