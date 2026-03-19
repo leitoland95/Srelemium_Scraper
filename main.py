@@ -574,8 +574,8 @@ def click_secuencia(req: SecuenciaRequest):
             time.sleep(2)
 
     try:
-    	log("Iniciando resolución del Captcha")
-    	button = "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/FOOTER[1]/BUTTON[1]"
+        log("Iniciando resolución del Captcha")
+        button = "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/FOOTER[1]/BUTTON[1]"
         elem = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, button))
             )
