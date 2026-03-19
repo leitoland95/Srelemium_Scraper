@@ -547,8 +547,8 @@ def click_secuencia(req: SecuenciaRequest):
             raise HTTPException(status_code=404, detail=f"No se encontró el elemento {elemento_id}: {str(e)}")
 
         try:
-            elem.click()
-            resultados.append({"elemento": elemento_id, "accion": "click"})
+            driver.execute_script("arguments[0].click();", elem)
+                resultados.append({"elemento": elemento_id, "accion": "click_js"})
         except WebDriverException:
             try:
                 driver.execute_script("arguments[0].click();", elem)
