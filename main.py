@@ -141,6 +141,10 @@ def build_xpath(el):
 @app.get("/")
 def root():
 	return {"status": 200}
+	
+@app.get("/logs")
+def devolver_logs():
+    return execution_logs
 
 @app.post("/navegar")
 def navegar(url: str):
@@ -532,18 +536,22 @@ def obtener_fragmentos_captcha(xpath: str):
     
 @app.post("/click_elemento")
 def click_secuencia(req: SecuenciaRequest):
+	log("Cambiando de iFrame")
     iframe = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]")
     driver.switch_to.frame(iframe)
     resultados = []
+    log("Iniciando Bucle de Secuencia")
     for idx in req.secuencia:
         if  not Iframe[idx]:
+        	log("El número de Secuencia no se corresponde con ninguna clave en el iFrame")
             raise HTTPException(status_code=404, detail=f"Elemento {idx} no encontrado")
 
-        xpath = Iframe[idx]
+        xpath_elemento = Iframe[idx]
 
         try:
-            elem = driver.find_element(By.XPATH, xpath)
+            elem = driver.find_element(By.XPATH, xpath_elemento)
         except Exception as e:
+        	log("El Xpath servido no se pudo encontrar en el iFrame actual")
             raise HTTPException(status_code=404, detail=f"No se encontró el elemento {idx}: {str(e)}")
 
         try:
