@@ -536,36 +536,41 @@ def obtener_fragmentos_captcha(xpath: str):
     
 @app.post("/click_elemento")
 def click_secuencia(req: SecuenciaRequest):
-	log("Cambiando de iFrame")
-    iframe = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]")
-    driver.switch_to.frame(iframe)
+    log("Cambiando de iFrame")
+    try:
+        iframe = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]"))
+        )
+        driver.switch_to.frame(iframe)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"No se encontró el iframe: {str(e)}")
+
     resultados = []
     log("Iniciando Bucle de Secuencia")
-    for idx in req.secuencia:
-        if  not Iframe[idx]:
-        	log("El número de Secuencia no se corresponde con ninguna clave en el iFrame")
-            raise HTTPException(status_code=404, detail=f"Elemento {idx} no encontrado")
+
+    for i, idx in enumerate(req.secuencia):
+        if idx not in Iframe:
+            log("El número de Secuencia no se corresponde con ninguna clave en el iFrame")
+            raise HTTPException(status_code=404, detail=f"Elemento {idx} no encontrado en diccionario")
 
         xpath_elemento = Iframe[idx]
 
         try:
-            elem = driver.find_element(By.XPATH, xpath_elemento)
+            elem = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, xpath_elemento))
+            )
         except Exception as e:
-        	log("El Xpath servido no se pudo encontrar en el iFrame actual")
+            log("El Xpath servido no se pudo encontrar en el iFrame actual")
             raise HTTPException(status_code=404, detail=f"No se encontró el elemento {idx}: {str(e)}")
 
         try:
             driver.execute_script("arguments[0].click();", elem)
             resultados.append({"elemento": idx, "accion": "click_js"})
-        except WebDriverException:
-            try:
-                driver.execute_script("arguments[0].click();", elem)
-                resultados.append({"elemento": idx, "accion": "click_js"})
-            except Exception as e:
-                raise HTTPException(status_code=500, detail=f"No se pudo clicar {idx}: {str(e)}")
+        except WebDriverException as e:
+            raise HTTPException(status_code=500, detail=f"No se pudo clicar {idx}: {str(e)}")
 
         # Espera de 2 segundos entre cada clic, excepto después del último
-        if idx < len(req.secuencia) - 1:
+        if i < len(req.secuencia) - 1:
             time.sleep(2)
 
     driver.switch_to.default_content()
