@@ -829,7 +829,25 @@ def escribir_y_click(texto: str = Query(..., description="Texto a escribir en el
         return {"status": "ok", "mensaje": f"Texto '{texto}' escrito y botón clicado"}
     except Exception as e:
         return {"status": "error", "detalle": str(e)}
-       
+
+@app.get("/sol_xcap")
+def iframe_click():
+    try:
+        # 1. Cambiar a un iframe predeterminado (ejemplo: primer iframe encontrado)
+        iframe = driver.find_element(By.XPATH, "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/div[1]/iframe[1]")
+        driver.switch_to.frame(iframe)
+
+        # 2. Click con JavaScript sobre un elemento predeterminado
+        element = driver.find_element(By.XPATH, "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]")
+        driver.execute_script("arguments[0].click();", element)
+        time.sleep(1)  # pequeña espera para que se procese el click
+
+        # 3. Salir del iframe
+        driver.switch_to.default_content()
+
+        return {"status": "success", "message": "Click ejecutado dentro del iframe y salida realizada"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}       
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
