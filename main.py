@@ -548,7 +548,7 @@ def click_secuencia(req: SecuenciaRequest):
 
         try:
             driver.execute_script("arguments[0].click();", elem)
-                resultados.append({"elemento": elemento_id, "accion": "click_js"})
+            resultados.append({"elemento": elemento_id, "accion": "click_js"})
         except WebDriverException:
             try:
                 driver.execute_script("arguments[0].click();", elem)
