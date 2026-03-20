@@ -29,7 +29,7 @@ XPATH_INPUT = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]
 XPATH_BOTON = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/p[1]/button[2]"
 
 # Diccionario de elementos disponibles
-Iframe = {
+Iframe_login = {
     1: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[1]",
     2: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[2]",
     3: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[3]",
@@ -548,12 +548,10 @@ def click_secuencia(req: SecuenciaRequest):
     resultados = []
     log("Iniciando Bucle de Secuencia")
 
-    for idx in req.secuencia:
-        
-        xpath_elemento = Iframe[idx]
-
+    for clave in req.secuencia:
         try:
-            elem = WebDriverWait(driver, 10).until(
+            xpath_elemento = str(Iframe_login[clave])
+            elem_aclicar = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, xpath_elemento))
             )
         except Exception as e:
@@ -561,22 +559,21 @@ def click_secuencia(req: SecuenciaRequest):
             raise HTTPException(status_code=404, detail=f"No se encontró el elemento {idx}: {str(e)}")
 
         try:
-            driver.execute_script("arguments[0].click();", elem)
-            resultados.append({"elemento": idx, "accion": "click_js"})
+            driver.execute_script("arguments[0].click();", elem_aclicar)
+            resultados.append({"elemento": clave, "accion": "click_js"})
         except WebDriverException as e:
-            raise HTTPException(status_code=500, detail=f"No se pudo clicar {idx}: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"No se pudo clicar {clave}: {str(e)}")
 
         # Espera de 2 segundos entre cada clic, excepto después del último
-        if i < len(req.secuencia) - 1:
-            time.sleep(2)
-
+        
+    time.sleep(1)
     try:
         log("Iniciando resolución del Captcha")
-        button = "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/FOOTER[1]/BUTTON[1]"
-        elem = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, button))
+        button_confirm = "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/FOOTER[1]/BUTTON[1]"
+        elem_confirm= WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, button_confirm))
             )
-        driver.execute_script("arguments[0].click();", elem)
+        driver.execute_script("arguments[0].click();", elem_confirm)
     except Exception as e:
     	return {"error al clicar confirm: ": e}
     
@@ -913,8 +910,57 @@ def escribir_js(xpath: str, texto: str):
     except Exception as e:
         return {"error al escribir en input: ": e}
             
-        
-        
+@app.get("/login")
+def login():
+    try:
+        driver.get("https://2captcha.com")
+    except Exception as e:
+        log(f"Error al navegar:{e} ")
+        return {"error": e}
+    time.sleep(2)
+    try:
+        xpath_quick = "/html[1]/body[1]/div[1]/div[2]/main[1]/div[1]/div[1]/section[1]/div[1]/a[1]"
+        elem = driver.find_element(By.XPATH, xpath_quick)
+        elem.click()
+    except Exception as e:
+        log(f"Error al Clicar Quick:{e} ")
+        return {"error": e}
+    time.sleep(2)
+    try:
+        texto_email = "norbertcice98@gmail.com"
+        xpath_email = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/div[2]/div[1]/div[1]/input[1]"
+        elem = driver.find_element(By.XPATH, xpath_email)
+        elem.clear()
+        elem.send_keys(texto_email)
+    except Exception as e:
+        log(f"Error al escribir en email:{e} ")
+        return {"error": e}
+    time.sleep(2)
+    try:
+        texto_pass = "Trebron89@#$"
+        xpath_pass = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/div[2]/div[1]/div[1]/input[1]"
+        elem = driver.find_element(By.XPATH, xpath_pass)
+        elem.clear()
+        elem.send_keys(texto_pass)
+    except Exception as e:
+        log(f"Error al escribir en password:{e} ")
+        return {"error": e}
+    time.sleep(2)
+    try:
+        xpath_box = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/label[1]/input[1]"
+        elem_box = driver.find_element(By.XPATH, xpath_box)
+        driver.execute_script("arguments[0].click();", elem_box)
+    except Exception as e:
+        log(f"Error al Clicar Checkbox:{e} ")
+        return {"error": e}
+    time.sleep(2)
+    try:
+        xpath_create = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/button[1]"
+        elem_create = driver.find_element(By.XPATH, xpath_create)
+        elem_create.click()
+    except Exception as e:
+        log(f"Error al Clicar Create:{e} ")
+        return {"error": e}
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
