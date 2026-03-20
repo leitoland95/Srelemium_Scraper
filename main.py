@@ -42,14 +42,14 @@ Iframe_login = {
 }
 
 Iframe_dos_cap = {
-    1: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[1]",
-    2: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[2]",
-    3: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[3]",
-    4: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[4]",
-    5: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[5]",
-    6: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[6]",
-    7: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[7]",
-    8: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[8]"
+    1: "/html/body/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+    2: "/html/body/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+    3: "/html/body/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+    4: "/html/body/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+    5: "/html/body/div[1]/div[1]/div[1]/div[1]/div[2]/div[5]",
+    6: "/html/body/div[1]/div[1]/div[1]/div[1]/div[2]/div[6]",
+    7: "/html/body/div[1]/div[1]/div[1]/div[1]/div[2]/div[7]",
+    8: "/html/body/div[1]/div[1]/div[1]/div[1]/div[2]/div[8]"
 }
 
 class SecuenciaModel(BaseModel):
@@ -1058,7 +1058,7 @@ def dos_cap(req: SecuenciaModel):
     try:
         log("Cambiando de IFRAME")
         time.sleep(1)
-        driver.switch_to.frame("/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]")
+        driver.switch_to.frame("_2cFrame2")
     except Exception as e:
         log(f"error al cambiar frame: {str(e)}")
         raise HTTPException(status_code=404, detail=f"No se encontró el iframe: {str(e)}")
@@ -1074,7 +1074,7 @@ def dos_cap(req: SecuenciaModel):
             
     try:
         log("Intentando Clicar Confirm")
-        button_confirm = "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/FOOTER[1]/BUTTON[1]"
+        button_confirm = "/html/body/div[1]/div[1]/div[1]/div[1]/footer[1]/button[1]"
         elem_confirm= driver.find_element(By.XPATH, button_confirm)
         elem_confirm.click()
     except Exception as e:
