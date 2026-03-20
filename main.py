@@ -91,6 +91,24 @@ driver = webdriver.Chrome(options=chrome_options)
 
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
+#### Escribir_JS Ingresar solo Texto
+
+@app.post("/escribir_js_general")
+def escribir_js(texto: str):
+    try: 
+        input_element = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH, XPATH_INPUT))
+        )
+        driver.execute_script("""
+        arguments[0].value = arguments[1];
+        arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+        arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+        """, input_element, texto)
+    except Exception as e:
+        return {"error al escribir en input: ": e}
+
+
+
 ##### CAMBIAR DE FRAME BY NAME ##
 
 @app.post("/change_frame")
