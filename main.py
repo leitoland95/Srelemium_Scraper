@@ -91,6 +91,71 @@ driver = webdriver.Chrome(options=chrome_options)
 
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
+##### CAMBIAR DE FRAME BY NAME ##
+
+@app.post("/change_frame")
+def change_frame(name: str):
+    try:
+        driver.switch_to.frame(name)
+        log("cambiando de FRAME")
+        return {"status": "Cambio Realizado"}
+    except Exception as e:
+        log("Ocurrió un error al intentar cambiar de FRAME ")
+        return {"error":str(e)}
+
+
+
+#####. SCRAP IFRAME_X_ID #########
+
+def get_absolute_xpath(driver, element):
+    return driver.execute_script("""
+    function absoluteXPath(element) {
+        if (element.tagName.toLowerCase() == 'html')
+            return '/html';
+        if (element===document.body)
+            return '/html/body';
+        var ix= 0;
+        var siblings= element.parentNode.childNodes;
+        for (var i= 0; i<siblings.length; i++) {
+            var sibling= siblings[i];
+            if (sibling===element)
+                return absoluteXPath(element.parentNode)+'/'+element.tagName.toLowerCase()+'['+(ix+1)+']';
+            if (sibling.nodeType===1 && sibling.tagName===element.tagName) {
+                ix++;
+            }
+        }
+    }
+    return absoluteXPath(arguments[0]);
+    """, element)
+    
+    
+@app.get("/scrapear_iframe")
+def scrape_iframe():
+    driver.switch_to.frame("_2cFrame2")
+
+    # Capturar todos los elementos dentro del iframe
+    elements = driver.find_elements(By.XPATH, "//*")
+
+    # Construir la lista con tag, texto y xpath absoluto
+    data = []
+    for el in elements:
+        try:
+            xpath = get_absolute_xpath(driver, el)
+            data.append({
+                "tag": el.tag_name,
+                "text": el.text.strip(),
+                "xpath": xpath
+            })
+        except Exception:
+            continue
+
+    # Volver al documento principal
+    driver.switch_to.default_content()
+
+    return {"iframe_elements": data}    
+
+##############################    
+
 def get_xpath(driver, element):
     return driver.execute_script(
         "function absoluteXPath(element) {"
