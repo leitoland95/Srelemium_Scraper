@@ -986,54 +986,38 @@ def login():
     except Exception as e:
         log(f"Error al clicar Create: {e}")
         return {"error": str(e)}
-
     return {"status": "Login intentado"}
     
 @app.post("/dos_cap")
 def dos_cap(req: SecuenciaModel):
-    respuesta = {"status": 0, "error": "Sin errores de ejecución"}
-    runing_err = list[dict]
     try:
-        iframe = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]"))
-        )
-        driver.switch_to.frame(iframe)
+        log("Cambiando de IFRAME")
+        time.sleep(1)
+        driver.switch_to.frame("/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]")
     except Exception as e:
-        runing_err.append({1:str(e)})
+        log(f"error al cambiar frame: {str(e)}")
         raise HTTPException(status_code=404, detail=f"No se encontró el iframe: {str(e)}")
     
     for clave in req.secuencia:
+        log("Intentado clicar elementos")
         try:
             elem_aclicar = driver.find_element(By.XPATH, Iframe_dos_cap[clave])
-            
-        except Exception as e:
-            runing_err.append({2:str(e)})
-            log("El Xpath servido no se pudo encontrar en el iFrame actual")
-            raise HTTPException(status_code=404, detail=f"No se encontró el elemento {clave}: {str(e)}")
-        try:
             elem_aclicar.click()
         except Exception as e:
-            runing_err.append({3:str(e)})
-            raise HTTPException(status_code=500, detail=f"No se pudo clicar {clave}: {str(e)}")
+            log(f"El Xpath servido no se pudo encontrar en el iFrame actual o no se pudo Clicar: {str(e)}")
+        time.sleep(1)
             
     try:
-        log("Iniciando resolución del Captcha")
+        log("Intentando Clicar Confirm")
         button_confirm = "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/FOOTER[1]/BUTTON[1]"
         elem_confirm= driver.find_element(By.XPATH, button_confirm)
         elem_confirm.click()
     except Exception as e:
-    	runing_err.append({4:str(e)})
-    	return {"error al clicar confirm: ": e}
+        log(f"No se puedo clicar: {str(e)}")
     
+    log("saliendo del IFRAME")
     driver.switch_to.default_content()
-    if len(runing_err) != 0:
-        respuesta["status"] = 1
-        respuesta["error"] = runing_err
-    else:
-    	pass
     
-    return respuesta
-
 app.get("/saltar_captcha")
 def saltar_captcha():
     respuesta = {"status": 0, "error": "Sin errores de ejecución"}
