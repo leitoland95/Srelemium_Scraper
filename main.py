@@ -40,6 +40,7 @@ Iframe_login = {
     7: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[7]",
     8: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[8]"
 }
+
 Iframe_dos_cap = {
     1: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[1]",
     2: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[2]",
@@ -990,12 +991,15 @@ def login():
     
 @app.post("/dos_cap")
 def dos_cap(req: SecuenciaModel):
+    respuesta = {"status": 0, "error": "Sin errores de ejecución"}
+    runing_err = list[dict]
     try:
         iframe = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]"))##??????????????????????????
         )
         driver.switch_to.frame(iframe)
     except Exception as e:
+        runing_err.append({1:str(e)})
         raise HTTPException(status_code=404, detail=f"No se encontró el iframe: {str(e)}")
     
     for clave in req.secuencia:
@@ -1005,12 +1009,14 @@ def dos_cap(req: SecuenciaModel):
                 EC.element_to_be_clickable((By.XPATH, xpath_elemento))
             )
         except Exception as e:
+            runing_err.append({2:str(e)})
             log("El Xpath servido no se pudo encontrar en el iFrame actual")
             raise HTTPException(status_code=404, detail=f"No se encontró el elemento {clave}: {str(e)}")
         try:
             driver.execute_script("arguments[0].click();", elem_aclicar)
             resultados.append({"elemento": clave, "accion": "click_js"})
-        except WebDriverException as e:
+        except Exception as e:
+            runing_err.append({3:str(e)})
             raise HTTPException(status_code=500, detail=f"No se pudo clicar {clave}: {str(e)}")
             
     try:
@@ -1021,11 +1027,17 @@ def dos_cap(req: SecuenciaModel):
             )
         driver.execute_script("arguments[0].click();", elem_confirm)
     except Exception as e:
+    	runing_err.append({4:str(e)})
     	return {"error al clicar confirm: ": e}
     
     driver.switch_to.default_content()
-    return {"status": "ok", "resultados": resultados}
-
+    if len(runing_err) != 0:
+        respuesta["status"] = 1
+        respuesta["error"] = runing_err
+    else:
+    	pass
+    
+    return respuesta
 
 app.get("/saltar_captcha")
 def saltar_captcha():
