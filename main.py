@@ -915,52 +915,65 @@ def login():
     try:
         driver.get("https://2captcha.com")
     except Exception as e:
-        log(f"Error al navegar:{e} ")
-        return {"error": e}
-    time.sleep(2)
+        log(f"Error al navegar: {e}")
+        return {"error": str(e)}
+
     try:
-        xpath_quick = "/html[1]/body[1]/div[1]/div[2]/main[1]/div[1]/div[1]/section[1]/div[1]/a[1]"
-        elem = driver.find_element(By.XPATH, xpath_quick)
+        xpath_quick = "//a[contains(text(),'Quick')]"
+        elem = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_quick))
+        )
         elem.click()
     except Exception as e:
-        log(f"Error al Clicar Quick:{e} ")
-        return {"error": e}
-    time.sleep(2)
+        log(f"Error al clicar Quick: {e}")
+        return {"error": str(e)}
+
     try:
         texto_email = "norbertcice98@gmail.com"
-        xpath_email = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/div[2]/div[1]/div[1]/input[1]"
-        elem = driver.find_element(By.XPATH, xpath_email)
+        xpath_email = "//input[@type='email']"
+        elem = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, xpath_email))
+        )
         elem.clear()
         elem.send_keys(texto_email)
     except Exception as e:
-        log(f"Error al escribir en email:{e} ")
-        return {"error": e}
-    time.sleep(2)
+        log(f"Error al escribir en email: {e}")
+        return {"error": str(e)}
+
     try:
         texto_pass = "Trebron89@#$"
-        xpath_pass = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/div[2]/div[1]/div[1]/input[1]"
-        elem = driver.find_element(By.XPATH, xpath_pass)
+        xpath_pass = "//input[@type='password']"
+        elem = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, xpath_pass))
+        )
         elem.clear()
         elem.send_keys(texto_pass)
     except Exception as e:
-        log(f"Error al escribir en password:{e} ")
-        return {"error": e}
-    time.sleep(2)
+        log(f"Error al escribir en password: {e}")
+        return {"error": str(e)}
+
     try:
-        xpath_box = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/label[1]/input[1]"
-        elem_box = driver.find_element(By.XPATH, xpath_box)
+        xpath_box = "//input[@type='checkbox']"
+        elem_box = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_box))
+        )
         driver.execute_script("arguments[0].click();", elem_box)
     except Exception as e:
-        log(f"Error al Clicar Checkbox:{e} ")
-        return {"error": e}
-    time.sleep(2)
+        log(f"Error al clicar Checkbox: {e}")
+        return {"error": str(e)}
+
     try:
-        xpath_create = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/button[1]"
-        elem_create = driver.find_element(By.XPATH, xpath_create)
+        xpath_create = "//button[contains(text(),'Create') or @type='submit']"
+        elem_create = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_create))
+        )
         elem_create.click()
     except Exception as e:
-        log(f"Error al Clicar Create:{e} ")
-        return {"error": e}
+        log(f"Error al clicar Create: {e}")
+        return {"error": str(e)}
+
+    return {"status": "Login intentado"}
+    
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
