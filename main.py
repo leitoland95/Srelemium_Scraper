@@ -29,7 +29,18 @@ XPATH_INPUT = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]
 XPATH_BOTON = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/p[1]/button[2]"
 
 # Diccionario de elementos disponibles
+
 Iframe_login = {
+    1: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+    2: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+    3: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+    4: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+    5: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[5]",
+    6: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[6]",
+    7: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[7]",
+    8: "/html[1]/body[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[8]"
+}
+Iframe_dos_cap = {
     1: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[1]",
     2: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[2]",
     3: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[3]",
@@ -39,6 +50,9 @@ Iframe_login = {
     7: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[7]",
     8: "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/DIV[2]/DIV[8]"
 }
+
+class SecuenciaModel(BaseModel):
+    secuencia: list[int]
 
 class SecuenciaRequest(BaseModel):
     secuencia: list[int]
@@ -973,6 +987,74 @@ def login():
         return {"error": str(e)}
 
     return {"status": "Login intentado"}
+    
+@app.post("/dos_cap")
+def dos_cap(req: SecuenciaModel):
+    try:
+        iframe = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[2]/div[1]/iframe[1]"))##??????????????????????????
+        )
+        driver.switch_to.frame(iframe)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"No se encontró el iframe: {str(e)}")
+    
+    for clave in req.secuencia:
+        try:
+            xpath_elemento = str(Iframe_dos_cap[clave])
+            elem_aclicar = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, xpath_elemento))
+            )
+        except Exception as e:
+            log("El Xpath servido no se pudo encontrar en el iFrame actual")
+            raise HTTPException(status_code=404, detail=f"No se encontró el elemento {clave}: {str(e)}")
+        try:
+            driver.execute_script("arguments[0].click();", elem_aclicar)
+            resultados.append({"elemento": clave, "accion": "click_js"})
+        except WebDriverException as e:
+            raise HTTPException(status_code=500, detail=f"No se pudo clicar {clave}: {str(e)}")
+            
+    try:
+        log("Iniciando resolución del Captcha")
+        button_confirm = "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/FOOTER[1]/BUTTON[1]"
+        elem_confirm= WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, button_confirm))
+            )
+        driver.execute_script("arguments[0].click();", elem_confirm)
+    except Exception as e:
+    	return {"error al clicar confirm: ": e}
+    
+    driver.switch_to.default_content()
+    return {"status": "ok", "resultados": resultados}
+
+
+app.get("/saltar_captcha")
+def saltar_captcha():
+    respuesta = {"status": 0, "error": "Sin errores de ejecución"}
+    runing_err = list[dict]
+    xpath_cancel = "/html[1]/body[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]/form[1]/p[1]/button[1]"
+    
+    try:
+        elem_cancel = WebDriverWait(driver,10).until(EC.element_to_be_clickable(By.XPATH, elem_cancel))
+    except Exception as e:
+        log(f"No se encontró el elemento en el frame actual")
+        log(f"error: {str(e)}")
+        runing_err.append({"1": str(e)})
+        
+    try:
+        driver.execute_script("arguments[0].click();", elem_cancel)
+    except Exception as e:
+        log(f"Error al intentar clicar el botón")
+        log(f"error: {str(e)}")
+        runing_err.append({"2": str(e)})
+    if len(runing_err) != 0:
+        respuesta["status"] = 1
+        respuesta["error"] = runing_err
+    else:
+    	pass
+    
+    return respuesta
+        
+    
     
 # ------------------- KEEP ALIVE -------------------
 
