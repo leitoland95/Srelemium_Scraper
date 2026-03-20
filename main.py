@@ -1004,10 +1004,8 @@ def dos_cap(req: SecuenciaModel):
     
     for clave in req.secuencia:
         try:
-            xpath_elemento = str(Iframe_dos_cap[clave])
-            elem_aclicar = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, xpath_elemento))
-            )
+            elem_aclicar = driver.find_element(By.XPATH, Iframe_dos_cap[clave])
+            
         except Exception as e:
             runing_err.append({2:str(e)})
             log("El Xpath servido no se pudo encontrar en el iFrame actual")
@@ -1021,9 +1019,7 @@ def dos_cap(req: SecuenciaModel):
     try:
         log("Iniciando resolución del Captcha")
         button_confirm = "/DIV[1]/DIV[1]/DIV[1]/DIV[1]/FOOTER[1]/BUTTON[1]"
-        elem_confirm= WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, button_confirm))
-            )
+        elem_confirm= driver.find_element(By.XPATH, button_confirm)
         elem_confirm.click()
     except Exception as e:
     	runing_err.append({4:str(e)})
