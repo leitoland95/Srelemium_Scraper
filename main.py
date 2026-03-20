@@ -548,11 +548,8 @@ def click_secuencia(req: SecuenciaRequest):
     resultados = []
     log("Iniciando Bucle de Secuencia")
 
-    for i, idx in enumerate(req.secuencia):
-        if idx not in Iframe:
-            log("El número de Secuencia no se corresponde con ninguna clave en el iFrame")
-            raise HTTPException(status_code=404, detail=f"Elemento {idx} no encontrado en diccionario")
-
+    for idx in req.secuencia:
+        
         xpath_elemento = Iframe[idx]
 
         try:
