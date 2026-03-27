@@ -50,7 +50,7 @@
       "value": "us"
     },
     {
-      "domain":  ".2captcha.com",
+      "domain": ".2captcha.com",
       "expiry": 1806187442,
       "httpOnly": false,
       "name": "_clck",
