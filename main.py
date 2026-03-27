@@ -92,22 +92,30 @@ driver = webdriver.Chrome(options=chrome_options)
 @app.get("/login_fast")
 def login_captcha():
   try:
+    log("Nevegando a principal")
     driver.get("https://2captcha.com")
     
     quick_xpath = "/html[1]/body[1]/div[1]/div[2]/main[1]/div[1]/div[1]/section[1]/div[1]/a[1]"
+    
+    log("Clicando quick")
     elem_1 = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH,quick_xpath)))
     driver.execute_script("arguments[0].click()",elem_1)
     
+    log("Navegando a login")
     driver.get("https://2captcha.com/auth/login")
     
+    
+    log("Escribiendo en email")
     email_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
     elem_3 = driver.find_element(By.XPATH, continue_xpath)
     elem_3.send_keys(email)
     
+    log("Escribiendo en password")
     passw_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[1]/form[1]/div[4]/div[1]/input[1]"
     elem_4 = driver.find_element(By.XPATH, passw_xpath)
     elem_4.send_keys(passw)
     
+    log("Clicando Iniciar session")
     continue_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[1]/form[1]/button[1]"
     elem_5 = driver.find_element(By.XPATH, continue_xpath)
     driver.execute_script("arguments[0].click()",elem_5)
