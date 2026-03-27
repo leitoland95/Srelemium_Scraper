@@ -96,11 +96,11 @@ def login_captcha():
     
     quick_xpath = "/html[1]/body[1]/div[1]/div[2]/main[1]/div[1]/div[1]/section[1]/div[1]/a[1]"
     elem_1 = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH,quick_xpath)))
-    driver.execute_script("documents[0].click()",elem_1)
+    driver.execute_script("arguments[0].click()",elem_1)
     
     login_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
     elem_2 = driver.find_element(By.XPATH, login_xpath)
-    driver.execute_script("documents[0].click()",elem_2)
+    driver.execute_script("arguments[0].click()",elem_2)
     
     email_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
     elem_3 = driver.find_element(By.XPATH, continue_xpath)
@@ -112,7 +112,7 @@ def login_captcha():
     
     continue_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[1]/form[1]/button[1]"
     elem_5 = driver.find_element(By.XPATH, continue_xpath)
-    driver.execute_script("documents[0].click()",elem_5)
+    driver.execute_script("arguments[0].click()",elem_5)
     
     return {"status": "Login Realizado con Exito"}
   except Exception as e:
