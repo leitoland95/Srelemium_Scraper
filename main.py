@@ -21,6 +21,9 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from openai import OpenAI
 from typing import Optional
 
+email = "treyreinger86@gmail.com"
+passw = "TreyCaptcha68@#"
+
 app = FastAPI()
 execution_logs = []
 
@@ -91,6 +94,36 @@ driver = webdriver.Chrome(options=chrome_options)
 
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
+# Login Fast
+@app.get("/login_fast")
+def login_captcha():
+  try:
+    driver.get("https://2captcha.com")
+    
+    quick_xpath = "/html[1]/body[1]/div[1]/div[2]/main[1]/div[1]/div[1]/section[1]/div[1]/a[1]"
+    elem_1 = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH,elem_1)))
+    driver.execute_script("documents[0].click()",elem_1)
+    
+    login_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
+    elem_2 = driver.find_element(By.XPATH, login_xpath)
+    driver.execute_script("documents[0].click()",elem_2)
+    
+    email_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
+    elem_3 = driver.find_element(By.XPATH, continue_xpath)
+    elem_3.send_keys(email)
+    
+    passw_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[1]/form[1]/div[4]/div[1]/input[1]"
+    elem_4 = driver.find_element(By.XPATH, passw_xpath)
+    elem_4.send_keys(passw)
+    
+    continue_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[1]/form[1]/button[1]"
+    elem_5 = driver.find_element(By.XPATH, continue_xpath)
+    driver.execute_script("documents[0].click()",elem_5)
+    
+    return {"status": "Login Realizado con Exito"}
+  except Exception as e:
+    return {"status": f"error: {str(e)}"}
+      
 #### Escribir_JS Ingresar solo Texto
 
 @app.post("/escribir_js_general")
@@ -110,6 +143,34 @@ def escribir_js(texto: str):
 
 
 ##### CAMBIAR DE FRAME BY NAME ##
+@app.get("/login_fast")
+def login_captcha():
+  try:
+    driver.get("https://2captcha.com")
+    
+    quick_xpath = "/html[1]/body[1]/div[1]/div[2]/main[1]/div[1]/div[1]/section[1]/div[1]/a[1]"
+    elem_1 = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH,elem_1)))
+    driver.execute_script("documents[0].click()",elem_1)
+    
+    login_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
+    elem_2 = driver.find_element(By.XPATH, login_xpath)
+    driver.execute_script("documents[0].click()",elem_2)
+    
+    email_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
+    elem_3 = driver.find_element(By.XPATH, continue_xpath)
+    elem_3.send_keys(email)
+    
+    passw_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[1]/form[1]/div[4]/div[1]/input[1]"
+    elem_4 = driver.find_element(By.XPATH, passw_xpath)
+    elem_4.send_keys(passw)
+    
+    continue_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[1]/form[1]/button[1]"
+    elem_5 = driver.find_element(By.XPATH, continue_xpath)
+    driver.execute_script("documents[0].click()",elem_5)
+    
+    return {"status": "Login Realizado con Exito"}
+  except Exception as e:
+      return {"status": f"error: {str(e)}"}
 
 @app.post("/change_frame")
 def change_frame(name: str):
