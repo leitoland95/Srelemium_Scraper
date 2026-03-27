@@ -98,9 +98,7 @@ def login_captcha():
     elem_1 = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH,quick_xpath)))
     driver.execute_script("arguments[0].click()",elem_1)
     
-    login_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
-    elem_2 = driver.find_element(By.XPATH, login_xpath)
-    driver.execute_script("arguments[0].click()",elem_2)
+    driver.get("https://2captcha.com/auth/login")
     
     email_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
     elem_3 = driver.find_element(By.XPATH, continue_xpath)
