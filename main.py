@@ -107,7 +107,7 @@ def login_captcha():
     
     log("Escribiendo en email")
     email_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
-    elem_3 = driver.find_element(By.XPATH, continue_xpath)
+    elem_3 = driver.find_element(By.XPATH, email_xpath)
     elem_3.send_keys(email)
     
     log("Escribiendo en password")
