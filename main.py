@@ -462,9 +462,9 @@ def exportar_cookies():
 
 @app.post("/cargarcookies")
 def cargar_cookies():
-    path = Path("telegram_cookies.json")
+    path = Path("cookies.json")
     if not path.exists():
-        return {"error": "telegram_cookies.json no encontrado"}
+        return {"error": "cookies.json no encontrado"}
 
     with open(path, "r") as f:
         data = json.load(f)
