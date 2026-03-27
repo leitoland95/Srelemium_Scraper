@@ -84,15 +84,9 @@ chrome_options.add_argument(f"user-agent={user_agent}")
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-api_key = os.getenv("OPENAI_API_KEY")
-client_ia = OpenAI(
-    api_key=os.environ.get("OPENAI_API_KEY"),
-    base_url="https://api.groq.com/openai/v1",
-)
 
 driver = webdriver.Chrome(options=chrome_options)
 
-client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Login Fast
 @app.get("/login_fast")
@@ -143,34 +137,6 @@ def escribir_js(texto: str):
 
 
 ##### CAMBIAR DE FRAME BY NAME ##
-@app.get("/login_fast")
-def login_captcha():
-  try:
-    driver.get("https://2captcha.com")
-    
-    quick_xpath = "/html[1]/body[1]/div[1]/div[2]/main[1]/div[1]/div[1]/section[1]/div[1]/a[1]"
-    elem_1 = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH,elem_1)))
-    driver.execute_script("documents[0].click()",elem_1)
-    
-    login_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
-    elem_2 = driver.find_element(By.XPATH, login_xpath)
-    driver.execute_script("documents[0].click()",elem_2)
-    
-    email_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
-    elem_3 = driver.find_element(By.XPATH, continue_xpath)
-    elem_3.send_keys(email)
-    
-    passw_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[1]/form[1]/div[4]/div[1]/input[1]"
-    elem_4 = driver.find_element(By.XPATH, passw_xpath)
-    elem_4.send_keys(passw)
-    
-    continue_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[1]/form[1]/button[1]"
-    elem_5 = driver.find_element(By.XPATH, continue_xpath)
-    driver.execute_script("documents[0].click()",elem_5)
-    
-    return {"status": "Login Realizado con Exito"}
-  except Exception as e:
-      return {"status": f"error: {str(e)}"}
 
 @app.post("/change_frame")
 def change_frame(name: str):
@@ -1069,68 +1035,7 @@ def escribir_js(xpath: str, texto: str):
     except Exception as e:
         return {"error al escribir en input: ": e}
             
-@app.get("/login")
-def login():
-    try:
-        driver.get("https://2captcha.com")
-    except Exception as e:
-        log(f"Error al navegar: {e}")
-        return {"error": str(e)}
 
-    try:
-        xpath_quick = "//a[contains(text(),'Quick')]"
-        elem = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, xpath_quick))
-        )
-        elem.click()
-    except Exception as e:
-        log(f"Error al clicar Quick: {e}")
-        return {"error": str(e)}
-
-    try:
-        texto_email = "norbertcice98@gmail.com"
-        xpath_email = "//input[@type='email']"
-        elem = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, xpath_email))
-        )
-        elem.clear()
-        elem.send_keys(texto_email)
-    except Exception as e:
-        log(f"Error al escribir en email: {e}")
-        return {"error": str(e)}
-
-    try:
-        texto_pass = "Trebron89@#$"
-        xpath_pass = "//input[@type='password']"
-        elem = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, xpath_pass))
-        )
-        elem.clear()
-        elem.send_keys(texto_pass)
-    except Exception as e:
-        log(f"Error al escribir en password: {e}")
-        return {"error": str(e)}
-
-    try:
-        xpath_box = "//input[@type='checkbox']"
-        elem_box = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, xpath_box))
-        )
-        driver.execute_script("arguments[0].click();", elem_box)
-    except Exception as e:
-        log(f"Error al clicar Checkbox: {e}")
-        return {"error": str(e)}
-
-    try:
-        xpath_create = "//button[contains(text(),'Create') or @type='submit']"
-        elem_create = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, xpath_create))
-        )
-        elem_create.click()
-    except Exception as e:
-        log(f"Error al clicar Create: {e}")
-        return {"error": str(e)}
-    return {"status": "Login intentado"}
     
 @app.post("/dos_cap")
 def dos_cap(req: SecuenciaModel):
@@ -1162,7 +1067,7 @@ def dos_cap(req: SecuenciaModel):
     log("saliendo del IFRAME")
     driver.switch_to.default_content()
     
-app.get("/saltar_captcha")
+@app.get("/saltar_captcha")
 def saltar_captcha():
     respuesta = {"status": 0, "error": "Sin errores de ejecución"}
     runing_err = list[dict]
