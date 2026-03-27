@@ -95,7 +95,7 @@ def login_captcha():
     driver.get("https://2captcha.com")
     
     quick_xpath = "/html[1]/body[1]/div[1]/div[2]/main[1]/div[1]/div[1]/section[1]/div[1]/a[1]"
-    elem_1 = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH,elem_1)))
+    elem_1 = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH,quick_xpath)))
     driver.execute_script("documents[0].click()",elem_1)
     
     login_xpath = "/html[1]/body[1]/div[1]/main[1]/div[2]/div[1]/div[2]/form[1]/p[1]/a[1]"
@@ -261,7 +261,7 @@ def build_xpath(el):
             return xpath;
         } return absoluteXPath(arguments[0]);""", el)      
 
-# ------------------- ENDPOINTS -------------------
+## ------------------- ENDPOINTS -------------------
 
 @app.get("/")
 def root():
