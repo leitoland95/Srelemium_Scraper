@@ -3,3 +3,4 @@ uvicorn
 selenium
 requests
 lxml
+python-multipart
