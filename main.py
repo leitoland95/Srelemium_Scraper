@@ -91,14 +91,21 @@ class CodeRequest(BaseModel):
 
 @app.post("/execute")
 def execute(req: CodeRequest):
-    # Contexto seguro: solo permitimos acceso a 'driver'
-    local_context = {"driver": driver, "etree":etree}
+    local_context = {"driver": driver}
+    buffer = io.StringIO()
+    sys_stdout = sys.stdout
+    sys.stdout = buffer
     try:
         exec(req.code, {}, local_context)
-        return {"status": "ok"}
+        output = buffer.getvalue()
+        return {"status": "ok", "output": output}
     except Exception as e:
         return {"status": "error", "detail": str(e)}
-
+    finally:
+        sys.stdout = sys_stdout
+        buffer.close()
+        
+        
 def get_xpath(element, root):
     return root.getpath(element)
 
