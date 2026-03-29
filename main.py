@@ -88,6 +88,33 @@ driver = webdriver.Chrome(options=chrome_options)
 
 class CodeRequest(BaseModel):
     code: str
+    
+@app.get("/cont_sign")
+def cont_sign():
+  try:
+    next_elem = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
+    
+    gmail_elem = driver.find_element((By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]"))
+    gmail_elem.click()
+    
+    next_elem.click()
+    ###
+    
+    next_elem = WebDriverWait(driver,20).until(EC.visibilty_of_element_located((By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
+    ########
+    pass_1 = driver.find_element(By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")
+    pass_1.send_keys("CarlNew88@#")
+    ########
+    pass_2 = driver.find_element(By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")
+    pass_2.send_keys("CarlNew88@#")
+    ###########
+    next_elem.click()
+    ###########
+    ###########
+    ###########
+    return {"status":"ok"}
+  except Exception as e:
+      return {"error":f"{e}"}
 
 @app.get("/signup_gmail")
 def signup_gmail():
@@ -112,7 +139,6 @@ def signup_gmail():
         
         # pagina birth dates
         next_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
-        next_elem.click()
         #
         day_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")
         day_elem.send_keys("25")
