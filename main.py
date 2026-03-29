@@ -92,7 +92,7 @@ class CodeRequest(BaseModel):
 @app.post("/execute")
 def execute(req: CodeRequest):
     # Contexto seguro: solo permitimos acceso a 'driver'
-    local_context = {"driver": driver}
+    local_context = {"driver": driver, "etree":etree}
     try:
         exec(req.code, {}, local_context)
         return {"status": "ok"}
