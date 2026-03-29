@@ -91,88 +91,104 @@ class CodeRequest(BaseModel):
     
 @app.get("/cont_sign")
 def cont_sign():
-  try:
     next_elem = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
     
-    gmail_elem = driver.find_element((By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]"))
-    gmail_elem.click()
     
-    next_elem.click()
-    ###
-    
-    next_elem = WebDriverWait(driver,20).until(EC.visibilty_of_element_located((By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
-    ########
-    pass_1 = driver.find_element(By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")
-    pass_1.send_keys("CarlNew88@#")
-    ########
-    pass_2 = driver.find_element(By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")
-    pass_2.send_keys("CarlNew88@#")
-    ###########
-    next_elem.click()
-    ###########
-    ###########
-    ###########
-    return {"status":"ok"}
-  except Exception as e:
-      return {"error":f"{e}"}
+
+
+
+
 
 @app.get("/signup_gmail")
 def signup_gmail():
     try:
         # NAVEGAR A INICIO
+        log('Navegar a Pagina de inicio')
         driver.get("https://accounts.google.com/v3/signin/identifier?dsh=S-1944281553%3A1774744543753783&flowName=GlifWebSignIn&flowEntry=ServiceLogin&ifkv=AT1y2_Vl9EVLSGwSNEeKJifQBUxoIXM7Tzk7FZ56PfBm9XhMIkbEUy5e4ybf87vNSyDykRgz4jmYKA")
+        log("Eperando a BTN Crear Cuenta")
         crear_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/button[1]")))
         # CLICAR CREAR CUENTA
+        log("Clicando elemento BTN")
         crear_elem.click()
         #para uso personal
+        log("Esperado x BTN Personal")
         personal_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/ul[1]/li[1]/span[3]")))
+        log("Clicando BTN")
         personal_elem.click()
         #escrbir: en nombre
-        name_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        log("Esperando por ")
+        name_elem = WebDriverWait(driver,10).until(EC.visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        log("Escribiendo en Name")
         name_elem.send_keys("Carlos")
         #
-        last_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        log("Obteniendo Apellidos")
+        last_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")
+        log("Escribiendo en Apellidos")
         last_elem.send_keys("Fernandez Ramirez")
         #
-        next_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
+        log("Obteniendon BTN Next")
+        next_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")
+        log("Clicando BTN")
         next_elem.click()
         
         # pagina birth dates
-        next_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
-        #
-        day_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")
+        log("Obteniendo INPUT Day")
+        day_elem = WebDriverWait(driver,20).until(visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        log("Escribiendo en INPUT")
         day_elem.send_keys("25")
         #
+        log("Obteniendo INPUT Year")
         year_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")
+        log("Escribiendo en INPUT")
         year_elem.send_keys("1991")
         #
+        log("Obteniendo BTN Mes")
         mon_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]")
+        log("Clicandon BTN")
         mon_elem.click()
         #
+        log("Obteniendo BTN Mes Epecifico")
         month_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/ul[1]/li[11]")
+        log("Clicandon BTN")
         month_elem.click()
-        
+        ######
+        log("Obteniendo BTN Gender")
         gen_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]")
+        log("Clicandon BTN")
         gen_elem.click()
+        log("Obteniendo BTN Gender Especifico")
         gender_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/ul[1]/li[2]")
+        log("Clicandon BTN")
         gender_elem.click()
-        
+        log("Obteniendo BTN Next")
+        next_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
+        log("Clicando BTN")
         next_elem.click()
         #$$$$$$$$$$$$$$
         
+        log("Obteniendo Select Gmail")
         sel_prop = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]")))
+        log("Clicandon Select")
         sel_prop.click()
-        #
+        ######
+        log("Obteniendo BTN Next")
         next_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")
+        log("Clicandon BTN")
         next_elem.click()
         #
-        next_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
-        #
-        passw_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")
-        passw_elem.send_keys("CarlNew88@#")
-        rep_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")
+        log("Obteniendo INPUT PASSW")
+        passw_elem = WebDriverWait(driver,20).until(visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        log("Escribiendo en Input")
         passw_elem.send_keys("CarlNew88@#")
         
+        log("Obteniendo INPUT Rep_PASSW")
+        rep_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")
+        log("Escribiendo en Input")
+        rep_elem.send_keys("CarlNew88@#")
+        #
+        log("Obteniendo BTN Next")
+        next_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
+        log("Clicando BTN")
         next_elem.click()
         
         
