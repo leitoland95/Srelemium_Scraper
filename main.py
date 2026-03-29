@@ -91,6 +91,7 @@ def get_xpath(element, root):
 
 @app.get("/scrape_spans")
 def scrape_spans():
+  try:
     # Usar la URL actual cargada en el driver
     current_url = driver.current_url
     if not current_url:
@@ -115,8 +116,8 @@ def scrape_spans():
         })
 
     return {"url": current_url, "elements": results}
-
-
+  except Exception as e:
+      return {"error: ": f"e"}
 
 
 # Login Fast  
