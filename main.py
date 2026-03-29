@@ -96,10 +96,11 @@ def execute(req: CodeRequest):
     sys_stdout = sys.stdout
     sys.stdout = buffer
     try:
-        exec(req.code, {}, local_context)
+        exec(req.code)
         output = buffer.getvalue()
         return {"status": "ok", "output": output}
     except Exception as e:
+        # Capturamos cualquier error y lo devolvemos como JSON
         return {"status": "error", "detail": str(e)}
     finally:
         sys.stdout = sys_stdout
