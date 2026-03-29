@@ -138,7 +138,7 @@ def scrape_spans():
 
     return {"url": current_url, "elements": results}
   except Exception as e:
-      return {"error: ": f"e"}
+      return {"error: ": f"{e}"}
 
 
 # Login Fast  
