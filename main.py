@@ -89,6 +89,36 @@ driver = webdriver.Chrome(options=chrome_options)
 class CodeRequest(BaseModel):
     code: str
 
+@app.get("/signup_gmail")
+def signup_gmail():
+    try:
+        # NAVEGAR A INICIO
+        driver.get("https://accounts.google.com/v3/signin/identifier?dsh=S-1944281553%3A1774744543753783&flowName=GlifWebSignIn&flowEntry=ServiceLogin&ifkv=AT1y2_Vl9EVLSGwSNEeKJifQBUxoIXM7Tzk7FZ56PfBm9XhMIkbEUy5e4ybf87vNSyDykRgz4jmYKA")
+        crear_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/button[1]")))
+        # CLICAR CREAR CUENTA
+        crear_elem.click()
+        #para uso personal
+        personal_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/ul[1]/li[1]/span[3]")))
+        personal_elem.click()
+        #escrbir: en nombre
+        name_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        name_elem.send_keys("Carlos")
+        #
+        last_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        last_elem.send_keys("Fernandez Ramirez")
+        #
+        next_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
+        next_elem.click()
+        #
+        day_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        day_elem.send_keys("25")
+        #
+        year_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        day_elem.send_keys("1991")
+        return {"status":"okk"}
+    except Exception as e:
+        return {"erro": f"{e}"}
+        
 @app.post("/execute")
 def execute(req: CodeRequest):
     local_context = {"driver": driver}
