@@ -16,9 +16,7 @@ from fastapi import Body, Form, UploadFile, File, Request
 from pydantic import BaseModel, HttpUrl
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
-from google import genai
 from fastapi.responses import JSONResponse, PlainTextResponse
-from openai import OpenAI
 from typing import Optional
 from lxm import etree
 
