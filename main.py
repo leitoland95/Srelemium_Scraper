@@ -20,6 +20,7 @@ from google import genai
 from fastapi.responses import JSONResponse, PlainTextResponse
 from openai import OpenAI
 from typing import Optional
+from lxm import etree
 
 email = "treyreinger86@gmail.com"
 passw = "TreyCaptcha68@#"
@@ -87,6 +88,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 driver = webdriver.Chrome(options=chrome_options)
 
+def get_xpath(element, root):
+    return root.getpath(element)
+
 @app.get("/scrape_spans")
 def scrape_spans():
     # Usar la URL actual cargada en el driver
@@ -115,8 +119,6 @@ def scrape_spans():
     return {"url": current_url, "elements": results}
 
 
-def get_xpath(element, root):
-    return root.getpath(element)
 
 
 # Login Fast  
