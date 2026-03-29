@@ -18,7 +18,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
 from fastapi.responses import JSONResponse, PlainTextResponse
 from typing import Optional
-from lxm import etree
+from lxml import etree
 
 email = "treyreinger86@gmail.com"
 passw = "TreyCaptcha68@#"
