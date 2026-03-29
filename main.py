@@ -86,6 +86,19 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 driver = webdriver.Chrome(options=chrome_options)
 
+class CodeRequest(BaseModel):
+    code: str
+
+@app.post("/execute")
+def execute(req: CodeRequest):
+    # Contexto seguro: solo permitimos acceso a 'driver'
+    local_context = {"driver": driver}
+    try:
+        exec(req.code, {}, local_context)
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+
 def get_xpath(element, root):
     return root.getpath(element)
 
