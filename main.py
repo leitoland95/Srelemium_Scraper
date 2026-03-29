@@ -107,38 +107,20 @@ def execute(req: CodeRequest):
         buffer.close()
         
         
-def get_xpath(element, root):
-    return root.getpath(element)
 
 @app.get("/scrape_spans")
-def scrape_spans():
-  try:
-    # Usar la URL actual cargada en el driver
-    current_url = driver.current_url
-    if not current_url:
-        return {"error": "No hay ninguna página cargada en el driver."}
-
-    time.sleep(2)  # esperar carga inicial
-
-    # Obtener HTML y parsear con lxml
-    dom = etree.HTML(driver.page_source)
-
-    spans = dom.xpath("//span")
-    results = []
-
-    for span in spans:
-        xpath = get_xpath(span, dom)
-        text = span.text.strip() if span.text else ""
-        desc = text if text else "sin texto"
-        results.append({
-            "tag": "span",
+def get_spans():
+    spans = driver.find_elements(By.TAG_NAME, "span")
+    resultados = []
+    for i, span in enumerate(spans, start=1):
+        xpath = get_xpath(driver, span)
+        descripcion = span.text.strip() if span.text else span.get_attribute("class") or "sin descripción"
+        resultados.append({
+            "index": i,
             "xpath": xpath,
-            "description": desc
+            "descripcion": descripcion
         })
-
-    return {"url": current_url, "elements": results}
-  except Exception as e:
-      return {"error: ": f"{e}"}
+    return {"spans": resultados}
 
 
 # Login Fast  
