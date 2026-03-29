@@ -87,8 +87,39 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 driver = webdriver.Chrome(options=chrome_options)
 
+@app.get("/scrape_spans")
+def scrape_spans():
+    # Usar la URL actual cargada en el driver
+    current_url = driver.current_url
+    if not current_url:
+        return {"error": "No hay ninguna página cargada en el driver."}
 
-# Login Fast
+    time.sleep(2)  # esperar carga inicial
+
+    # Obtener HTML y parsear con lxml
+    dom = etree.HTML(driver.page_source)
+
+    spans = dom.xpath("//span")
+    results = []
+
+    for span in spans:
+        xpath = get_xpath(span, dom)
+        text = span.text.strip() if span.text else ""
+        desc = text if text else "sin texto"
+        results.append({
+            "tag": "span",
+            "xpath": xpath,
+            "description": desc
+        })
+
+    return {"url": current_url, "elements": results}
+
+
+def get_xpath(element, root):
+    return root.getpath(element)
+
+
+# Login Fast  
 @app.get("/login_fast")
 def login_captcha():
   try:
