@@ -88,34 +88,6 @@ driver = webdriver.Chrome(options=chrome_options)
 
 class CodeRequest(BaseModel):
     code: str
-    
-@app.get("/cont_sign")    
-def cont_sign():
-    try:
-        next_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
-        day_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")
-        day_elem.send_keys("25")
-        #
-        year_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")
-        year_elem.send_keys("1991")
-        #
-        mon_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]")
-        mon_elem.click()
-        #
-        month_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/ul[1]/li[11]")
-        month_elem.click()
-        
-        gen_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]")
-        gen_elem.click()
-        gender_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/ul[1]/li[2]")
-        gender_elem.click()
-        
-        next_elem.click()
-    except Exception as e:
-        return {"error": f"{e}"}
-            
-                    
-        
 
 @app.get("/signup_gmail")
 def signup_gmail():
@@ -160,6 +132,7 @@ def signup_gmail():
         gender_elem.click()
         
         next_elem.click()
+        #$$$$$$$$$$$$$$
         
         sel_prop = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]")))
         sel_prop.click()
