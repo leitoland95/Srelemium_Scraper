@@ -2,7 +2,4 @@ fastapi
 uvicorn
 selenium
 requests
-pydantic
-google-genai
-python-multipart
-openai
+lxml
