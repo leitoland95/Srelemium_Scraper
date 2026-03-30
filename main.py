@@ -133,7 +133,7 @@ def signup_gmail():
         
         # pagina birth dates
         log("Obteniendo INPUT Day")
-        day_elem = WebDriverWait(driver,20).until(visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        day_elem = WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
         log("Escribiendo en INPUT")
         day_elem.send_keys("25")
         #
@@ -177,7 +177,7 @@ def signup_gmail():
         next_elem.click()
         #
         log("Obteniendo INPUT PASSW")
-        passw_elem = WebDriverWait(driver,20).until(visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        passw_elem = WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
         log("Escribiendo en Input")
         passw_elem.send_keys("CarlNew88@#")
         
