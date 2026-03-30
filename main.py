@@ -195,6 +195,7 @@ def signup_gmail():
         
         return {"status":"okk"}
     except Exception as e:
+        log(f"error: {e}")
         return {"error": f"{e}"}
     
         
