@@ -1246,8 +1246,32 @@ def saltar_captcha():
     
     return respuesta
         
-    
-    
+@app.get("/get_radios")    
+def get_radios():
+    """Devuelve lista de radios con XPath y descripción asociada."""
+    radios = driver.find_elements(By.XPATH, "//input[@type='radio']")
+    resultados = []
+    for el in radios:
+        if el.is_displayed():
+            xp = build_xpath(driver, el)
+            desc = ""
+            # Intentar obtener el texto del label asociado
+            try:
+                label_text = driver.execute_script(
+                    "return arguments[0].labels && arguments[0].labels[0] ? arguments[0].labels[0].innerText : '';",
+                    el
+                )
+                desc = label_text.strip()
+            except:
+                pass
+            # Si no hay label, usar atributos
+            if not desc:
+                desc = el.get_attribute("value") or el.get_attribute("name") or el.get_attribute("id") or ""
+            resultados.append({
+                "xpath": xp,
+                "descripcion": desc
+            })
+    return {"Results":resultados}
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
