@@ -195,7 +195,6 @@ def signup_gmail():
         
         return {"status":"okk"}
     except Exception as e:
-        log(f"error: {e}")
         return {"error": f"{e}"}
     
         
@@ -489,7 +488,8 @@ def get_xpaths_inputs_full():
                 (By.XPATH,
                  "//input[@type='text'] | //input[@type='password'] | //input[@type='email'] | "
                  "//input[@type='search'] | //input[@type='tel'] | //input[@type='url'] | "
-                 "//textarea | //input[@type='checkbox']")
+                 "//textarea | //input[@type='checkbox'] | "
+                 "//input[@type='radio']")
             )
         )
     except Exception as e:
