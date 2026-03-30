@@ -1248,30 +1248,34 @@ def saltar_captcha():
         
 @app.get("/get_radios")    
 def get_radios():
-    """Devuelve lista de radios con XPath y descripción asociada."""
-    radios = driver.find_elements(By.XPATH, "//input[@type='radio']")
-    resultados = []
-    for el in radios:
+    try:
+        # Espera hasta que haya al menos un input en la página
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//input"))
+        )
+    except Exception as e:
+        return {"error": f"No se encontraron inputs: {e}"}
+
+    elementos = []
+    for el in driver.find_elements(By.XPATH, "//input"):
         if el.is_displayed():
-            xp = build_xpath(driver, el)
-            desc = ""
-            # Intentar obtener el texto del label asociado
-            try:
-                label_text = driver.execute_script(
-                    "return arguments[0].labels && arguments[0].labels[0] ? arguments[0].labels[0].innerText : '';",
-                    el
+            xp = build_xpath(el)
+            if xp:
+                desc = (
+                    el.get_attribute("placeholder")
+                    or el.get_attribute("name")
+                    or el.get_attribute("id")
+                    or el.get_attribute("value")
+                    or el.get_attribute("type")
+                    or ""
                 )
-                desc = label_text.strip()
-            except:
-                pass
-            # Si no hay label, usar atributos
-            if not desc:
-                desc = el.get_attribute("value") or el.get_attribute("name") or el.get_attribute("id") or ""
-            resultados.append({
-                "xpath": xp,
-                "descripcion": desc
-            })
-    return {"Results":resultados}
+                elementos.append({
+                    "xpath": xp,
+                    "descripcion": desc,
+                    "tipo": el.get_attribute("type") or "input"
+                })
+
+    return {"inputs": elementos}
 # ------------------- KEEP ALIVE -------------------
 
 def keep_alive():
