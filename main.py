@@ -119,12 +119,12 @@ def signup_gmail():
         log("Esperando por ")
         name_elem = WebDriverWait(driver,10).until(EC.visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
         log("Escribiendo en Name")
-        name_elem.send_keys("Carlos")
+        name_elem.send_keys("Alberto")
         #
         log("Obteniendo Apellidos")
         last_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")
         log("Escribiendo en Apellidos")
-        last_elem.send_keys("Fernandez Ramirez")
+        last_elem.send_keys("Lopez Garcia")
         #
         log("Obteniendon BTN Next")
         next_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")
@@ -135,12 +135,12 @@ def signup_gmail():
         log("Obteniendo INPUT Day")
         day_elem = WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
         log("Escribiendo en INPUT")
-        day_elem.send_keys("25")
+        day_elem.send_keys("18")
         #
         log("Obteniendo INPUT Year")
         year_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")
         log("Escribiendo en INPUT")
-        year_elem.send_keys("1991")
+        year_elem.send_keys("2000")
         #
         log("Obteniendo BTN Mes")
         mon_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]")
@@ -148,7 +148,7 @@ def signup_gmail():
         mon_elem.click()
         #
         log("Obteniendo BTN Mes Epecifico")
-        month_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/ul[1]/li[11]")
+        month_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/ul[1]/li[10]")
         log("Clicandon BTN")
         month_elem.click()
         ######
@@ -179,12 +179,12 @@ def signup_gmail():
         log("Obteniendo INPUT PASSW")
         passw_elem = WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
         log("Escribiendo en Input")
-        passw_elem.send_keys("CarlNew88@#")
+        passw_elem.send_keys("JokerIMok66$$")
         
         log("Obteniendo INPUT Rep_PASSW")
         rep_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")
         log("Escribiendo en Input")
-        rep_elem.send_keys("CarlNew88@#")
+        rep_elem.send_keys("JokerIMok66$$")
         #
         log("Obteniendo BTN Next")
         next_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
