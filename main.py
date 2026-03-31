@@ -165,31 +165,6 @@ def signup_gmail():
         log("Clicando BTN")
         next_elem.click()
         #$$$$$$$$$$$$$$
-        time.sleep(5)
-        log("Obteniendo Select Gmail")
-        sel_prop = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")
-        log("Clicando Select")
-        sel_prop.click()
-        ######
-        log("Obteniendo BTN Next")
-        next_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")
-        log("Clicandon BTN")
-        next_elem.click()
-        #
-        log("Obteniendo INPUT PASSW")
-        passw_elem = WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
-        log("Escribiendo en Input")
-        passw_elem.send_keys("JokerIMok66$$")
-        
-        log("Obteniendo INPUT Rep_PASSW")
-        rep_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")
-        log("Escribiendo en Input")
-        rep_elem.send_keys("JokerIMok66$$")
-        #
-        log("Obteniendo BTN Next")
-        next_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
-        log("Clicando BTN")
-        next_elem.click()
         
         
         
