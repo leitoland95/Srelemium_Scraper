@@ -165,13 +165,37 @@ def signup_gmail():
         log("Clicando BTN")
         next_elem.click()
         #$$$$$$$$$$$$$$
+        time.sleep(3)
+        log("Obteniendo input propuesta")
+        esc_prop = driver.find_element(By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")
+        log("Escribir propuesta")
+        esc_prop.send_keys("albertysgarc66")
+        log("Obtener boton")
+        next_elem = driver.find_element(By.XPATH,"/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")
+        log("Clicar boton next")
+        next_elem.click()
         
-        
+        log("Obteniendo INPUT PASSW")
+        passw_elem = WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/input[1]")))
+        log("Escribiendo en Input")
+        passw_elem.send_keys("JokerIMok66$$")
+        #
+        log("Obteniendo INPUT Rep_PASSW")
+        rep_elem = driver.find_element(By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[2]/div[1]/div[1]/div[1]/span[1]/section[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/input[1]")
+        log("Escribiendo en Input")
+        rep_elem.send_keys("JokerIMok66$$")
+        #
+        log("Obteniendo BTN Next")
+        next_elem = WebDriverWait(driver,10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[2]/div[1]/div[1]/div[2]/c-wiz[1]/main[1]/div[3]/div[1]/div[1]/div[1]/div[1]/button[1]")))
+        log("Clicando BTN")
+        next_elem.click()
         
         return {"status":"okk"}
     except Exception as e:
         return {"error": f"{e}"}
-    
+        
+        
+        
         
 @app.post("/execute")
 def execute(req: CodeRequest):
